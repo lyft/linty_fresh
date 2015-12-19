@@ -36,7 +36,7 @@ def create_parser() -> argparse.ArgumentParser:
     return parser
 
 
-async def main():
+async def run_loop(args):
     args = create_parser().parse_args()
     reporters = []
     for reporter in args.reporter:
@@ -71,7 +71,12 @@ async def main():
     await asyncio.gather(*awaitable_array)
 
 
-if __name__ == '__main__':
+def main():
+    args = create_parser().parse_args()
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(main())
+    loop.run_until_complete(run_loop(args))
     loop.close()
+
+
+if __name__ == '__main__':
+    main()
