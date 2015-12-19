@@ -1,0 +1,45 @@
+*.swp
+
+*.py[cod]
+.venv/
+
+# C extensions
+*.so
+
+# Packages
+*.egg
+*.egg-info
+dist
+build
+eggs
+.eggs
+parts
+bin
+var
+sdist
+develop-eggs
+.installed.cfg
+lib
+lib64
+__pycache__
+
+# Installer logs
+pip-log.txt
+
+# Unit test / coverage reports
+.coverage
+.tox
+nosetests.xml
+karma-test-results.xml
+
+# Mr Developer (mac, editor, IDEs, etc)
+.mr.developer.cfg
+.project
+.pydevproject
+.vagrant
+.ropeproject
+.tmp
+.sass-cache
+.DS_store
+.zedstate
+.idea
