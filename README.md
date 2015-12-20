@@ -41,6 +41,8 @@ for OSS projects).  Then add that token as a secret to your CI system as the
 environment variable `GITHUB_AUTH_TOKEN`.  You should ensure this user and it's
 token are scoped down as much as possible.  You should assume that anyone who
 has permissions to run a job in your CI system would have access to this token.
+See Travis CI documentation [storing encrypted secrets]
+(https://docs.travis-ci.com/user/encryption-keys/) for more information.
 
 If you are looking for a good secret management system to store secrets like
 this, check out [Confidant](https://github.com/lyft/confidant/).
