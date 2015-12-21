@@ -9,6 +9,8 @@ MYPY_LINE_REGEX = re.compile(r'(?P<path>[^:]*):(?P<line>\d*):\s*'
                              r'(?P<code>\w*)\s*:\s*(?P<message>.*)')
 
 
+
+
 def parse(contents: str) -> Set[Problem]:
     result = set()  # type: Set[Problem]
     for line in contents.splitlines():
