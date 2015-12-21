@@ -10,8 +10,12 @@ pull request.
 
 
 Requirements
-----------------
+------------
  - [Python 3](https://www.python.org/downloads/)
+
+Contributing
+------------
+[CONTRIBUTING.md](CONTRIBUTING.md)
 
 Installation
 ------------
