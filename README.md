@@ -1,6 +1,8 @@
 :sparkles: Linty Fresh :sparkles:
 ===============================
 
+[![Join the chat at https://gitter.im/lyft/linty_fresh](https://badges.gitter.im/lyft/linty_fresh.svg)](https://gitter.im/lyft/linty_fresh?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Keep your codebase sparkly clean with the power of **LINT**!
 
 Linty Fresh parses lint errors and report them back to Github as comments on a
