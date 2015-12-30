@@ -4,7 +4,7 @@ from linty_fresh.problem import Problem
 
 from typing import Set
 
-PYLINT_LINE_REGEX = re.compile(r'(?P<path>[^:]*):(?P<line>\d*):\s*'
+PYLINT_LINE_REGEX = re.compile(r'(?P<path>[^:]+):(?P<line>\d+):\s*'
                                r'(?:(?P<column>\d*):)?\s*'
                                r'(?P<message>.*)')
 
