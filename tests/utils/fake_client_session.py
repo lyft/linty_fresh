@@ -7,8 +7,9 @@ from mock import call
 
 
 class FakeClientResponse(object):
-    def __init__(self, content, headers=None):
+    def __init__(self, content, headers=None, status=201):
         self.headers = headers or {}
+        self.status = status
         self.content = FakeStreamReader(content)
 
     @asyncio.coroutine

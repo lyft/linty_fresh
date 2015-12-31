@@ -1,5 +1,9 @@
 import argparse
 import asyncio
+import sys
+
+from collections import Counter
+from itertools import chain
 
 from linty_fresh.linters import checkstyle, mypy, pylint, swiftlint
 from linty_fresh.reporters import github_reporter
@@ -57,11 +61,10 @@ def run_loop(args):
         with open(lint_file_path, 'r') as lint_file:
             problems.update(linter.parse(lint_file.read()))
 
-    storage_engine = GitNotesStorageEngine('origin')
-
     awaitable_array = []
 
     if args.store_problems:
+        storage_engine = GitNotesStorageEngine('origin')
         awaitable_array.append(storage_engine.store_problems(problems))
         existing_problems = yield from storage_engine.get_existing_problems()
         problems = problems.difference(existing_problems)
@@ -69,15 +72,29 @@ def run_loop(args):
     awaitable_array.extend([reporter.report(problems) for
                             reporter in
                             reporters])
-    yield from asyncio.gather(*awaitable_array)
+    result = yield from asyncio.gather(*awaitable_array)
+
+    result = list(chain.from_iterable(result))
+
+    if not result:
+        print('No new problem found')
+        return 0
+
+    report = '%d new problem(s) found' % len(result)
+    counter = Counter(result)
+    if counter.get(False):
+        report += ' (but %d could not be reported)' % counter[False]
+    print(report, file=sys.stderr)
+    return 1
 
 
 def main():
     args = create_parser().parse_args()
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(run_loop(args))
+    exit_code = loop.run_until_complete(run_loop(args))
     loop.close()
+    return exit_code
 
 
 if __name__ == '__main__':
-    main()
+    exit(main())
