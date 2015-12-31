@@ -12,6 +12,7 @@ class PyLintTest(unittest.TestCase):
         test_string = '''
 src/linters/pylint.py:10: [E302] expected 2 blank lines, found 1
 tests/linters/pylint.py:42: [E302] expected 2 blank lines, found 1
+::
 '''
         result = pylint.parse(test_string)
         self.assertEqual(2, len(result))
