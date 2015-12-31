@@ -61,12 +61,8 @@ class GithubReporter(object):
                 message_for_line = [':sparkles:Linty Fresh Says:sparkles::',
                                     '',
                                     '```']
-
-                reported_problems_for_line = set()
-                for problem in problems_for_line:
-                    if problem.message not in reported_problems_for_line:
-                        message_for_line.append(problem.message)
-                        reported_problems_for_line.add(problem.message)
+                message_for_line.extend(sorted(
+                    set(problem.message for problem in problems_for_line)))
                 message_for_line.append('```')
 
                 path = location[0]

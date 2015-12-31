@@ -60,11 +60,18 @@ class GithubReporterTest(unittest.TestCase):
 
         reporter = github_reporter.create_reporter(mock_args)
         async_report = reporter.report([
+            # First comment to be added, with 2 messages
             Problem('some_dir/some_file', 40, 'this made me sad'),
-            Problem('some_dir/some_file', 40, 'really sad'),
+            Problem('some_dir/some_file', 40, 'yes, really sad'),
+            # Second comment to be added, with only 1 message
             Problem('another_file', 2, 'This is OK'),
             Problem('another_file', 2, 'This is OK'),
+            # This comment with 1 message already in the PR will not be added
             Problem('another_file', 3, 'I am a duplicate!'),
+            # This comment with 2 messages already in the PR will not be added
+            Problem('another_file', 4, 'I am also a duplicate!'),
+            Problem('another_file', 4, 'But on many lines!'),
+            # This comment on a file not in the PR will not be added
             Problem('missing_file', 42, "Don't report me!!!"),
         ])
 
@@ -112,7 +119,7 @@ class GithubReporterTest(unittest.TestCase):
 
                     ```
                     this made me sad
-                    really sad
+                    yes, really sad
                     ```'''),
                 'position': 3
             }, sort_keys=True)
@@ -174,6 +181,15 @@ class GithubReporterTest(unittest.TestCase):
 
                      ```
                      I am a duplicate!
+                     ```''')}, {
+                 'path': 'another_file',
+                 'position': 4,
+                 'body': textwrap.dedent('''\
+                     :sparkles:Linty Fresh Says:sparkles::
+
+                     ```
+                     But on many lines!
+                     I am also a duplicate!
                      ```''')}], sort_keys=True)),
             ('https://api.github.com/repos/foo/bar/pulls/1234/comments',
              'post'): FakeClientResponse('')
