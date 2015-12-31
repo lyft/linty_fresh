@@ -36,7 +36,8 @@ def create_parser() -> argparse.ArgumentParser:
     return parser
 
 
-async def run_loop(args):
+@asyncio.coroutine
+def run_loop(args):
     args = create_parser().parse_args()
     reporters = []
     for reporter in args.reporter:
@@ -62,13 +63,13 @@ async def run_loop(args):
 
     if args.store_problems:
         awaitable_array.append(storage_engine.store_problems(problems))
-        existing_problems = await storage_engine.get_existing_problems()
+        existing_problems = yield from storage_engine.get_existing_problems()
         problems = problems.difference(existing_problems)
 
     awaitable_array.extend([reporter.report(problems) for
                             reporter in
                             reporters])
-    await asyncio.gather(*awaitable_array)
+    yield from asyncio.gather(*awaitable_array)
 
 
 def main():

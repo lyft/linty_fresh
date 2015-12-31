@@ -43,14 +43,15 @@ class GithubReporter(object):
         self.pr = pr_number
         self.commit = commit
 
-    async def report(self, problems: List[Problem]) -> None:
+    @asyncio.coroutine
+    def report(self, problems: List[Problem]) -> None:
         grouped_problems = Problem.group_by_path_and_line(problems)
 
         headers = {
             'Authorization': 'token {}'.format(self.auth_token),
         }
         with aiohttp.ClientSession(headers=headers) as client_session:
-            (line_map, existing_messages) = await asyncio.gather(
+            (line_map, existing_messages) = yield from asyncio.gather(
                 self.create_line_to_position_map(client_session),
                 self.get_existing_messages(client_session))
             lint_errors = 0
@@ -94,15 +95,17 @@ Only reporting the first {1}.'''.format(
                     'body': message
                 })
                 review_comment_awaitable.append(
-                    asyncio.ensure_future(client_session.post(pr_url,
-                                                              data=data)))
-            responses = await asyncio.gather(
+                    asyncio.async(client_session.post(pr_url, data=data)))
+
+            responses = yield from asyncio.gather(
                 *review_comment_awaitable
             )  # type: List[aiohttp.ClientResponse]
+
             for response in responses:
                 response.close()
 
-    async def create_line_to_position_map(
+    @asyncio.coroutine
+    def create_line_to_position_map(
         self, client_session: aiohttp.ClientSession
     ) -> MutableMapping[str, Dict[int, int]]:
         result = defaultdict(dict)  # type: MutableMapping[str, Dict[int, int]]
@@ -118,27 +121,27 @@ Only reporting the first {1}.'''.format(
                    organization=self.organization,
                    repo=self.repo,
                    pr=self.pr))
-        async with client_session.get(url, headers=headers) as response:
-            async for line in response.content:
-                line = line.decode()
-                file_match = FILE_START_REGEX.match(line)
-                if file_match:
-                    current_file = file_match.groups()[0]
-                    right_line_number = -1
-                    position = -1
-                    continue
-                elif line.startswith(NEW_FILE_SECTION_START):
-                    current_file = ''
-                if not current_file:
-                    continue
+        response = yield from client_session.get(url, headers=headers)
+        content = yield from response.text()
+        for line in content.split('\n'):
+            file_match = FILE_START_REGEX.match(line)
+            if file_match:
+                current_file = file_match.groups()[0]
+                right_line_number = -1
+                position = -1
+                continue
+            elif line.startswith(NEW_FILE_SECTION_START):
+                current_file = ''
+            if not current_file:
+                continue
 
-                position += 1
-                hunk_match = HUNK_REGEX.match(line)
-                if hunk_match:
-                    right_line_number = int(hunk_match.groups()[0]) - 1
-                elif not line.startswith('-'):
-                    right_line_number += 1
-                    result[current_file][right_line_number] = position
+            position += 1
+            hunk_match = HUNK_REGEX.match(line)
+            if hunk_match:
+                right_line_number = int(hunk_match.groups()[0]) - 1
+            elif not line.startswith('-'):
+                right_line_number += 1
+                result[current_file][right_line_number] = position
 
         return result
 
@@ -149,32 +152,35 @@ Only reporting the first {1}.'''.format(
                     repo=self.repo,
                     pr=self.pr))
 
-    async def get_existing_messages(
+    @asyncio.coroutine
+    def get_existing_messages(
         self, client_session: aiohttp.ClientSession
     ) -> Set[ExistingGithubMessage]:
         url = self._get_pr_url()
-        return await self._fetch_messages_from_url(client_session, url)
+        result = yield from self._fetch_messages_from_url(client_session, url)
+        return result
 
     @staticmethod
-    async def _fetch_messages_from_url(
+    @asyncio.coroutine
+    def _fetch_messages_from_url(
             client_session, url
     ) -> Set[ExistingGithubMessage]:
         existing_messages = set()  # type: Set[ExistingGithubMessage]
-        async with client_session.get(url) as response:
-            response = response  # type: aiohttp.ClientResponse
-            comments = json.loads(await response.text())
-            for comment in comments:
-                existing_messages.add(
-                    ExistingGithubMessage(path=comment['path'],
-                                          position=comment['position'],
-                                          body=comment['body']))
+        response = yield from client_session.get(url)
+        content_json = yield from response.text()
+        comments = json.loads(content_json)
+        for comment in comments:
+            existing_messages.add(
+                ExistingGithubMessage(path=comment['path'],
+                                      position=comment['position'],
+                                      body=comment['body']))
 
-            next_url = GithubReporter._find_next_url(response)
+        next_url = GithubReporter._find_next_url(response)
 
         if next_url:
-            existing_messages = existing_messages.union(
-                await GithubReporter._fetch_messages_from_url(
-                    client_session, next_url))
+            new_messages = yield from GithubReporter._fetch_messages_from_url(
+                client_session, next_url)
+            existing_messages = existing_messages.union(new_messages)
 
         return existing_messages
 

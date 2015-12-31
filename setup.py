@@ -8,7 +8,7 @@ def get_version(file_name='linty_fresh/__init__.py'):
                 return line.split('=')[-1].strip(" '")
 
 setup(
-    name='linty-fresh',
+    name='linty-fresh-py34',
     version=get_version(),
     license='apache',
     description='''
@@ -16,7 +16,7 @@ setup(
     ''',
     author='Roy Williams',
     author_email='rwilliams@lyft.com',
-    url='https://github.com/lyft/linty-fresh',
+    url='https://github.com/twidi/linty-fresh',
     packages=find_packages(exclude=['tests*']),
     include_package_data=True,
     setup_requires=[

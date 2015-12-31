@@ -1,4 +1,5 @@
 import copy
+import asyncio
 from typing import Dict, Tuple
 
 from aiohttp.client import _RequestContextManager
@@ -9,17 +10,21 @@ class FakeClientResponse(object):
     def __init__(self, content, headers=None):
         self.headers = headers or {}
         self.content = FakeStreamReader(content)
-    async def text(self):
+
+    @asyncio.coroutine
+    def text(self):
         return self.content.content
 
     def __await__(self):
         yield
         return self
 
-    async def __aenter__(self):
+    @asyncio.coroutine
+    def __aenter__(self):
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    @asyncio.coroutine
+    def __aexit__(self, exc_type, exc_val, exc_tb):
         pass
 
     def close(self):
@@ -49,7 +54,8 @@ class FakeClientSession(object):
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
 
-    async def _get_stored_value(self, url, method):
+    @asyncio.coroutine
+    def _get_stored_value(self, url, method):
         if (url, method) not in self.url_map:
             raise Exception('Invalid test request: ({}, {})'.format(
                 url, method
@@ -83,11 +89,13 @@ class FakeStreamReader(object):
         self.lines = content.splitlines()
         self.line_index = 0
 
-    async def __aiter__(self):
+    @asyncio.coroutine
+    def __aiter__(self):
         self.line_index = 0
         return self
 
-    async def __anext__(self):
+    @asyncio.coroutine
+    def __anext__(self):
         if self.line_index < len(self.lines):
             self.line_index += 1
             return self.lines[self.line_index - 1].encode()

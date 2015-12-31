@@ -8,10 +8,14 @@ pull request.
 
 ![Linty Fresh](http://i.imgur.com/epWogrw.png)
 
+This repository is a fork by [Twidi](https://github.com/twidi) to make
+`linty-fresh` works with Python 3.4.
+
+The original repository is hosted on https://github.com/lyft/linty_fresh
 
 Requirements
 ------------
- - [Python 3](https://www.python.org/downloads/)
+ - [Python >= 3.4.1](https://www.python.org/downloads/)
 
 Contributing
 ------------
@@ -23,8 +27,11 @@ Linty Fresh is hosted in [PyPi](https://pypi.python.org/pypi).  To get started,
 Run
 
 ```shell
-pip3 install linty-fresh
+pip3 install linty-fresh-py34
 ```
+
+The original package from `lyft` is `linty-fresh` (without the `py34` part), and supports
+only python 3.5.
 
 ### Install from source
 

@@ -13,6 +13,10 @@ asynchronous libraries like [aiohttp](https://github.com/KeepSafe/aiohttp) or
  https://github.com/JukkaL/mypy/issues/913) so we can't integrate types into
  CI, but PyCharm is able to parse/validate types.
 
+Python 3.4
+----------
+The package `linty-fresh-py34` is an attempt to make `linty-fresh` works with python 3.4.
+
 Running Tests
 -------------
 ```py
