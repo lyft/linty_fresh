@@ -60,16 +60,26 @@ class GithubReporterTest(unittest.TestCase):
 
         reporter = github_reporter.create_reporter(mock_args)
         async_report = reporter.report([
+            # First comment to be added, with 2 messages
             Problem('some_dir/some_file', 40, 'this made me sad'),
-            Problem('some_dir/some_file', 40, 'really sad'),
+            Problem('some_dir/some_file', 40, 'yes, really sad'),
+            # Second comment to be added, with only 1 message
             Problem('another_file', 2, 'This is OK'),
             Problem('another_file', 2, 'This is OK'),
+            # This comment with 1 message already in the PR will not be added
             Problem('another_file', 3, 'I am a duplicate!'),
+            # This comment with 2 messages already in the PR will not be added
+            Problem('another_file', 4, 'I am also a duplicate!'),
+            Problem('another_file', 4, 'But on many lines!'),
+            # This comment on a file not in the PR will not be added
             Problem('missing_file', 42, "Don't report me!!!"),
         ])
 
         loop = asyncio.get_event_loop()
-        loop.run_until_complete(async_report)
+        result = loop.run_until_complete(async_report)
+
+        # Only two messages where successfully sent
+        self.assertEqual(result, [True, True])
 
         diff_request = call.get(
             'https://api.github.com/repos/foo/bar/pulls/1234',
@@ -112,7 +122,7 @@ class GithubReporterTest(unittest.TestCase):
 
                     ```
                     this made me sad
-                    really sad
+                    yes, really sad
                     ```'''),
                 'position': 3
             }, sort_keys=True)
@@ -161,11 +171,35 @@ class GithubReporterTest(unittest.TestCase):
         self.assertEqual(3 + github_reporter.MAX_LINT_ERROR_REPORTS,
                          len(fake_client_session.calls))
 
-    def create_mock_pr(self, mock_getenv, mock_client_session):
+    @patch('linty_fresh.reporters.github_reporter.aiohttp.ClientSession')
+    @patch('os.getenv')
+    def test_failing_report_result(self,
+                              mock_getenv,
+                              mock_client_session):
+        mock_args, fake_client_session = self.create_mock_pr(
+            mock_getenv,
+            mock_client_session,
+            pr_id=12345)
+
+        reporter = github_reporter.create_reporter(mock_args)
+        async_report = reporter.report([
+            Problem('some_dir/some_file', 40, 'this made me sad'),
+            Problem('another_file', 2, 'This is OK'),
+        ])
+
+        loop = asyncio.get_event_loop()
+        result = loop.run_until_complete(async_report)
+
+        # Both messages couldn't be sent
+        self.assertEqual(result, [False, False])
+
+    def create_mock_pr(self, mock_getenv, mock_client_session, pr_id=1234):
+        # Use pr_id=1234 for successful comment post
+        # Use pr_id=12345 for failing comment post
         fake_client_session = FakeClientSession(url_map={
-            ('https://api.github.com/repos/foo/bar/pulls/1234', 'get'):
+            ('https://api.github.com/repos/foo/bar/pulls/%d' % pr_id, 'get'):
                 FakeClientResponse(GithubReporterTest.github_patch),
-            ('https://api.github.com/repos/foo/bar/pulls/1234/comments',
+            ('https://api.github.com/repos/foo/bar/pulls/%d/comments' % pr_id,
              'get'): FakeClientResponse(json.dumps([{
                  'path': 'another_file',
                  'position': 3,
@@ -174,9 +208,22 @@ class GithubReporterTest(unittest.TestCase):
 
                      ```
                      I am a duplicate!
+                     ```''')}, {
+                 'path': 'another_file',
+                 'position': 4,
+                 'body': textwrap.dedent('''\
+                     :sparkles:Linty Fresh Says:sparkles::
+
+                     ```
+                     But on many lines!
+                     I am also a duplicate!
                      ```''')}], sort_keys=True)),
+            # Used for successful posts with status "201 created"
             ('https://api.github.com/repos/foo/bar/pulls/1234/comments',
-             'post'): FakeClientResponse('')
+             'post'): FakeClientResponse(''),
+            # Used for failing posts with status "422 unprocessable entity"
+            ('https://api.github.com/repos/foo/bar/pulls/12345/comments',
+             'post'): FakeClientResponse('', status=422)
         })
 
         def session_init_side_effect(headers=None, *args, **kwargs):
@@ -184,7 +231,7 @@ class GithubReporterTest(unittest.TestCase):
             return fake_client_session
 
         mock_args = MagicMock()
-        mock_args.pr_url = 'https://github.com/foo/bar/pull/1234'
+        mock_args.pr_url = 'https://github.com/foo/bar/pull/%d' % pr_id
         mock_args.commit = 'abc123'
         mock_getenv.return_value = 'MY_TOKEN'
         mock_client_session.side_effect = session_init_side_effect
