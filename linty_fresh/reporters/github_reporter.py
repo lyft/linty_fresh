@@ -102,6 +102,9 @@ Only reporting the first {1}.'''.format(
             for response in responses:
                 response.close()
 
+            # Send `True` for successful POSTs, `False` for others
+            return [response.status == 201 for response in responses]
+
     async def create_line_to_position_map(
         self, client_session: aiohttp.ClientSession
     ) -> MutableMapping[str, Dict[int, int]]:
