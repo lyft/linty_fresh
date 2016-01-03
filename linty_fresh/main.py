@@ -29,6 +29,12 @@ def create_parser() -> argparse.ArgumentParser:
     parser.add_argument('--store_problems', default=False, action='store_true',
                         help='Whether or not to store lint errors as git '
                              'notes and filter out problems')
+    parser.add_argument('--github_max_reports', type=int, action='store',
+                        default=github_reporter.DEFAULT_MAX_ERROR_REPORTS,
+                        help='Max number of errors to report on Github '
+                             '(default %d)' %
+                             github_reporter.DEFAULT_MAX_ERROR_REPORTS
+                        )
     parser.add_argument('files', type=str, nargs='+',
                         help='The lint file being parsed.')
     for name, reporter in REPORTERS.items():

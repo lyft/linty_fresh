@@ -158,7 +158,7 @@ class GithubReporterTest(unittest.TestCase):
         )
 
         self.assertIn(overflow_call, fake_client_session.calls)
-        self.assertEqual(3 + github_reporter.MAX_LINT_ERROR_REPORTS,
+        self.assertEqual(3 + reporter.max_error_reports,
                          len(fake_client_session.calls))
 
     def create_mock_pr(self, mock_getenv, mock_client_session):
@@ -186,13 +186,15 @@ class GithubReporterTest(unittest.TestCase):
         mock_args = MagicMock()
         mock_args.pr_url = 'https://github.com/foo/bar/pull/1234'
         mock_args.commit = 'abc123'
+        mock_args.github_max_reports = github_reporter.DEFAULT_MAX_ERROR_REPORTS
         mock_getenv.return_value = 'MY_TOKEN'
         mock_client_session.side_effect = session_init_side_effect
 
         return mock_args, fake_client_session
 
     def test_create_line_map(self):
-        reporter = GithubReporter('TOKEN', 'foo', 'bar', 12, 'abc123')
+        reporter = GithubReporter('TOKEN', 'foo', 'bar', 12, 'abc123',
+                                  github_reporter.DEFAULT_MAX_ERROR_REPORTS)
         client_session = FakeClientSession(url_map={
             ('https://api.github.com/repos/foo/bar/pulls/12', 'get'):
                 FakeClientResponse(GithubReporterTest.github_patch)
@@ -211,7 +213,8 @@ class GithubReporterTest(unittest.TestCase):
         self.assertEqual(12, line_map['some_dir/some_file'][59])
 
     def test_messages_paging(self):
-        reporter = GithubReporter('TOKEN', 'foo', 'bar', 12, 'abc123')
+        reporter = GithubReporter('TOKEN', 'foo', 'bar', 12, 'abc123',
+                                  github_reporter.DEFAULT_MAX_ERROR_REPORTS)
         client_session = FakeClientSession(url_map={
             ('https://api.github.com/repos/foo/bar/pulls/12/comments', 'get'):
                 FakeClientResponse(json.dumps([{

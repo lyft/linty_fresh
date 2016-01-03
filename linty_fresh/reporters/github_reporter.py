@@ -22,7 +22,7 @@ HUNK_REGEX = re.compile(r'@@ \-\d+,\d+ \+(\d+),\d+ @@')
 FILE_START_REGEX = re.compile(r'\+\+\+ b/(.*)')
 LINK_REGEX = re.compile(r'<(?P<url>.+)>; rel="(?P<rel>\w+)"')
 NEW_FILE_SECTION_START = 'diff --git a'
-MAX_LINT_ERROR_REPORTS = 10
+DEFAULT_MAX_ERROR_REPORTS = 10
 
 ExistingGithubMessage = NamedTuple('ExistingGithubMessage',
                                    [('path', str),
@@ -36,12 +36,14 @@ class GithubReporter(object):
                  organization: str,
                  repo: str,
                  pr_number: int,
-                 commit: str) -> None:
+                 commit: str,
+                 max_error_reports: int) -> None:
         self.auth_token = auth_token
         self.organization = organization
         self.repo = repo
         self.pr = pr_number
         self.commit = commit
+        self.max_error_reports = max_error_reports
 
     async def report(self, problems: List[Problem]) -> None:
         grouped_problems = Problem.group_by_path_and_line(problems)
@@ -75,7 +77,7 @@ class GithubReporter(object):
                     message = '\n'.join(message_for_line)
                     if (path, position, message) not in existing_messages:
                         lint_errors += 1
-                        if lint_errors <= MAX_LINT_ERROR_REPORTS:
+                        if lint_errors <= self.max_error_reports:
                             data = json.dumps({
                                 'body': message,
                                 'commit_id': self.commit,
@@ -84,12 +86,12 @@ class GithubReporter(object):
                             }, sort_keys=True)
                             review_comment_awaitable.append(
                                 client_session.post(pr_url, data=data))
-            if lint_errors > MAX_LINT_ERROR_REPORTS:
+            if lint_errors > self.max_error_reports:
                 message = ''':sparkles:Linty Fresh Says:sparkles::
 
 Too many lint errors to report inline!  {0} lines have a problem.
 Only reporting the first {1}.'''.format(
-                    lint_errors, MAX_LINT_ERROR_REPORTS)
+                    lint_errors, self.max_error_reports)
                 data = json.dumps({
                     'body': message
                 })
@@ -212,7 +214,8 @@ def create_reporter(args: Any) -> GithubReporter:
                               groups['organization'],
                               groups['repo'],
                               int(groups['pr_number']),
-                              args.commit)
+                              args.commit,
+                              args.github_max_reports)
     else:
         raise Exception("{} doesn't appear to be a valid github pr url".format(
             args.pr_url
