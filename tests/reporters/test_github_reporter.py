@@ -6,7 +6,7 @@ import unittest
 from mock import MagicMock, call, patch
 
 from linty_fresh.reporters import github_reporter
-from linty_fresh.reporters.github_reporter import GithubReporter
+from linty_fresh.reporters.github_reporter import GithubReporter, MAX_LINT_ERROR_REPORTS
 from linty_fresh.problem import Problem
 from ..utils.fake_client_session import FakeClientResponse, FakeClientSession
 
@@ -69,7 +69,10 @@ class GithubReporterTest(unittest.TestCase):
         ])
 
         loop = asyncio.get_event_loop()
-        loop.run_until_complete(async_report)
+        result = loop.run_until_complete(async_report)
+
+        # 3 problems on the PR, 2 new, no sending problem
+        self.assertEqual(result, ('GithubReporter', 3, 2, None, 0))
 
         diff_request = call.get(
             'https://api.github.com/repos/foo/bar/pulls/1234',
@@ -135,12 +138,22 @@ class GithubReporterTest(unittest.TestCase):
 
         reporter = github_reporter.create_reporter(mock_args)
 
-        problems = [Problem('another_file', x, 'Wat') for x in range(1, 13)]
+        problems_count = MAX_LINT_ERROR_REPORTS + 2
+
+        problems = [Problem('another_file', x, 'Wat') for x in range(1, problems_count+1)]
 
         async_report = reporter.report(problems)
 
         loop = asyncio.get_event_loop()
-        loop.run_until_complete(async_report)
+        result = loop.run_until_complete(async_report)
+
+        self.assertEqual(result,(
+            'GithubReporter',
+            problems_count,
+            MAX_LINT_ERROR_REPORTS + 1,  # max + "Too many lint errors"
+            MAX_LINT_ERROR_REPORTS,
+            0,
+        ))
 
         overflow_message = textwrap.dedent('''\
             :sparkles:Linty Fresh Says:sparkles::
@@ -161,11 +174,36 @@ class GithubReporterTest(unittest.TestCase):
         self.assertEqual(3 + github_reporter.MAX_LINT_ERROR_REPORTS,
                          len(fake_client_session.calls))
 
-    def create_mock_pr(self, mock_getenv, mock_client_session):
+    @patch('linty_fresh.reporters.github_reporter.aiohttp.ClientSession')
+    @patch('os.getenv')
+    def test_failing_report_result(self,
+                              mock_getenv,
+                              mock_client_session):
+        mock_args, fake_client_session = self.create_mock_pr(
+            mock_getenv,
+            mock_client_session,
+            pr_id=12345)
+
+        reporter = github_reporter.create_reporter(mock_args)
+        async_report = reporter.report([
+            Problem('some_dir/some_file', 40, 'this made me sad'),
+            Problem('another_file', 2, 'This is OK'),
+            Problem('another_file', 3, 'I am a duplicate!'),
+        ])
+
+        loop = asyncio.get_event_loop()
+        result = loop.run_until_complete(async_report)
+
+        # 3 problems, 2 new, 2 sending problems
+        self.assertEqual(result, ('GithubReporter', 3, 2, None, 2))
+
+    def create_mock_pr(self, mock_getenv, mock_client_session, pr_id=1234):
+        # Use pr_id=1234 for successful comment post
+        # Use pr_id=12345 for failing comment post
         fake_client_session = FakeClientSession(url_map={
-            ('https://api.github.com/repos/foo/bar/pulls/1234', 'get'):
+            ('https://api.github.com/repos/foo/bar/pulls/%d' % pr_id, 'get'):
                 FakeClientResponse(GithubReporterTest.github_patch),
-            ('https://api.github.com/repos/foo/bar/pulls/1234/comments',
+            ('https://api.github.com/repos/foo/bar/pulls/%d/comments' % pr_id,
              'get'): FakeClientResponse(json.dumps([{
                  'path': 'another_file',
                  'position': 3,
@@ -175,8 +213,12 @@ class GithubReporterTest(unittest.TestCase):
                      ```
                      I am a duplicate!
                      ```''')}], sort_keys=True)),
+            # Used for successful posts with status "201 created"
             ('https://api.github.com/repos/foo/bar/pulls/1234/comments',
-             'post'): FakeClientResponse('')
+             'post'): FakeClientResponse(''),
+            # Used for failing posts with status "422 unprocessable entity"
+            ('https://api.github.com/repos/foo/bar/pulls/12345/comments',
+             'post'): FakeClientResponse('', status=422)
         })
 
         def session_init_side_effect(headers=None, *args, **kwargs):
@@ -184,7 +226,7 @@ class GithubReporterTest(unittest.TestCase):
             return fake_client_session
 
         mock_args = MagicMock()
-        mock_args.pr_url = 'https://github.com/foo/bar/pull/1234'
+        mock_args.pr_url = 'https://github.com/foo/bar/pull/%d' % pr_id
         mock_args.commit = 'abc123'
         mock_getenv.return_value = 'MY_TOKEN'
         mock_client_session.side_effect = session_init_side_effect
