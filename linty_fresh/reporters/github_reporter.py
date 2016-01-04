@@ -138,7 +138,8 @@ Only reporting the first {1}.'''.format(
                     right_line_number = int(hunk_match.groups()[0]) - 1
                 elif not line.startswith('-'):
                     right_line_number += 1
-                    result[current_file][right_line_number] = position
+                    if line.startswith('+'):
+                        result[current_file][right_line_number] = position
 
         return result
 
