@@ -35,4 +35,5 @@ class Problem(object):
             return problem.path, problem.line
 
         sorted_problems = sorted(problems, key=key_func)
-        return itertools.groupby(sorted_problems, key_func)
+        return [(location, list(problems)) for (location, problems) in
+                itertools.groupby(sorted_problems, key_func)]
