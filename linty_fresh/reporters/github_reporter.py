@@ -56,22 +56,30 @@ class GithubReporter(object):
             lint_errors = 0
             review_comment_awaitable = []
             pr_url = self._get_pr_url()
+            no_matching_line_number = []
             for location, problems_for_line in grouped_problems:
                 message_for_line = [':sparkles:Linty Fresh Says:sparkles::',
-                                    '',
-                                    '```']
+                                    '']
 
                 reported_problems_for_line = set()
-                for problem in problems_for_line:
-                    if problem.message not in reported_problems_for_line:
-                        message_for_line.append(problem.message)
-                        reported_problems_for_line.add(problem.message)
-                message_for_line.append('```')
 
                 path = location[0]
                 line_number = location[1]
                 position = line_map.get(path, {}).get(line_number, None)
+                if position is None and path in line_map:
+                    file_map = line_map[path]
+                    closest_line = min(file_map.keys(),
+                                       key=lambda x: abs(x-line_number))
+                    position = file_map[closest_line]
+                    message_for_line.append('(From line {})'.format(
+                        line_number))
+                message_for_line.append('```')
                 if position is not None:
+                    for problem in problems_for_line:
+                        if problem.message not in reported_problems_for_line:
+                            message_for_line.append(problem.message)
+                            reported_problems_for_line.add(problem.message)
+                    message_for_line.append('```')
                     message = '\n'.join(message_for_line)
                     if (path, position, message) not in existing_messages:
                         lint_errors += 1
@@ -84,6 +92,9 @@ class GithubReporter(object):
                             }, sort_keys=True)
                             review_comment_awaitable.append(
                                 client_session.post(pr_url, data=data))
+                else:
+                    no_matching_line_number.append((location,
+                                                    problems_for_line))
             if lint_errors > MAX_LINT_ERROR_REPORTS:
                 message = ''':sparkles:Linty Fresh Says:sparkles::
 
@@ -94,8 +105,29 @@ Only reporting the first {1}.'''.format(
                     'body': message
                 })
                 review_comment_awaitable.append(
-                    asyncio.ensure_future(client_session.post(pr_url,
-                                                              data=data)))
+                    asyncio.ensure_future(client_session.post(
+                        self._get_issue_url(),
+                        data=data)))
+            if no_matching_line_number:
+                no_matching_line_messages = []
+                for location, problems_for_line in no_matching_line_number:
+                    path = location[0]
+                    line_number = location[1]
+                    no_matching_line_messages.append(
+                        '{0}:{1}:'.format(path, line_number))
+                    for problem in problems_for_line:
+                        no_matching_line_messages.append('\t{0}'.format(
+                            problem.message))
+                message = ('Linters found some problems with lines not '
+                           'modified by this commit:\n```\n{0}\n```'.format(
+                               '\n'.join(no_matching_line_messages)))
+                data = json.dumps({
+                    'body': message
+                })
+                review_comment_awaitable.append(
+                    asyncio.ensure_future(client_session.post(
+                        self._get_issue_url(), data=data)))
+
             responses = await asyncio.gather(
                 *review_comment_awaitable
             )  # type: List[aiohttp.ClientResponse]
@@ -123,7 +155,7 @@ Only reporting the first {1}.'''.format(
                 line = line.decode()
                 file_match = FILE_START_REGEX.match(line)
                 if file_match:
-                    current_file = file_match.groups()[0]
+                    current_file = file_match.groups()[0].strip()
                     right_line_number = -1
                     position = -1
                     continue
@@ -145,6 +177,13 @@ Only reporting the first {1}.'''.format(
     def _get_pr_url(self) -> str:
         return ('https://api.github.com/repos/'
                 '{organization}/{repo}/pulls/{pr}/comments'.format(
+                    organization=self.organization,
+                    repo=self.repo,
+                    pr=self.pr))
+
+    def _get_issue_url(self) -> str:
+        return ('https://api.github.com/repos/'
+                '{organization}/{repo}/issues/{pr}/comments'.format(
                     organization=self.organization,
                     repo=self.repo,
                     pr=self.pr))

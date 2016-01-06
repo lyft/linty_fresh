@@ -65,7 +65,8 @@ class GithubReporterTest(unittest.TestCase):
             Problem('another_file', 2, 'This is OK'),
             Problem('another_file', 2, 'This is OK'),
             Problem('another_file', 3, 'I am a duplicate!'),
-            Problem('missing_file', 42, "Don't report me!!!"),
+            Problem('another_file', 52, "#close_enough!!!"),
+            Problem('missing_file', 42, "Missing file comment!!!"),
         ])
 
         loop = asyncio.get_event_loop()
@@ -117,12 +118,41 @@ class GithubReporterTest(unittest.TestCase):
                 'position': 3
             }, sort_keys=True)
         )
+        close_enough_comment = call.post(
+            'https://api.github.com/repos/foo/bar/pulls/1234/comments',
+            headers={
+                'Authorization': 'token MY_TOKEN'
+            },
+            data=json.dumps({
+                'commit_id': 'abc123',
+                'path': 'another_file',
+                'body': textwrap.dedent('''\
+                    :sparkles:Linty Fresh Says:sparkles::
 
-        self.assertEqual(4, len(fake_client_session.calls))
+                    (From line 52)
+                    ```
+                    #close_enough!!!
+                    ```'''),
+                'position': 12
+            }, sort_keys=True)
+        )
+        missing_file_call = call.post(
+            'https://api.github.com/repos/foo/bar/issues/1234/comments',
+            headers={
+                'Authorization': 'token MY_TOKEN'
+            },
+            data=json.dumps({
+                'body': textwrap.dedent('''\
+                '''),
+            }, sort_keys=True)
+        )
+
+        self.assertEqual(6, len(fake_client_session.calls))
         self.assertIn(diff_request, fake_client_session.calls)
         self.assertIn(existing_comments_request, fake_client_session.calls)
         self.assertIn(first_comment, fake_client_session.calls)
         self.assertIn(second_comment, fake_client_session.calls)
+        self.assertIn(close_enough_comment, fake_client_session.calls)
 
     @patch('linty_fresh.reporters.github_reporter.aiohttp.ClientSession')
     @patch('os.getenv')
@@ -148,7 +178,7 @@ class GithubReporterTest(unittest.TestCase):
             Too many lint errors to report inline!  12 lines have a problem.
             Only reporting the first 10.''')
         overflow_call = call.post(
-            'https://api.github.com/repos/foo/bar/pulls/1234/comments',
+            'https://api.github.com/repos/foo/bar/issues/1234/comments',
             headers={
                 'Authorization': 'token MY_TOKEN'
             },
@@ -176,6 +206,8 @@ class GithubReporterTest(unittest.TestCase):
                      I am a duplicate!
                      ```''')}], sort_keys=True)),
             ('https://api.github.com/repos/foo/bar/pulls/1234/comments',
+             'post'): FakeClientResponse(''),
+            ('https://api.github.com/repos/foo/bar/issues/1234/comments',
              'post'): FakeClientResponse('')
         })
 
