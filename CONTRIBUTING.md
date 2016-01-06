@@ -1,6 +1,14 @@
 :sparkles: Contributing to Linty Fresh :sparkles:
 =================================================
 
+CLA
+---
+In order to clarify the intellectual property rights in the project, and to
+grant licenses to the project to others, we require contributors accept the
+CLA.  Don't worry, we don't need anything faxed in, just a PR from you.  Follow
+the instructions at https://github.com/lyft/CLA and you'll be good to
+contribute.
+
 Python 3.5
 ----------
 Linty Fresh is currently written to target Python 3.5, partly as a way to
