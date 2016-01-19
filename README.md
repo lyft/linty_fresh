@@ -3,8 +3,8 @@
 
 Keep your codebase sparkly clean with the power of **LINT**!
 
-Linty Fresh parses lint errors and report them back to Github as comments on a
-pull request.
+Linty Fresh parses lint errors and report them back to Github as comments on
+the pull request.
 
 ![Linty Fresh](http://i.imgur.com/epWogrw.png)
 
