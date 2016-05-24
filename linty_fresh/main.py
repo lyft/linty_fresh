@@ -13,7 +13,7 @@ REPORTERS = {
 }  # type: Dict[str, Any]
 
 LINTERS = {
-    'android': android
+    'android': android,
     'checkstyle': checkstyle,
     'mypy': mypy,
     'pylint': pylint,
