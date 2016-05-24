@@ -15,7 +15,7 @@ def parse(contents: str) -> Set[Problem]:
         location = issue.getchildren()[0]
         result.add(Problem(
             location.get('file'),
-            location.get('line'),
+            location.get('line', '0'),
             '{}: {}'.format(
                 issue.get('summary'),
                 issue.get('message'))))
