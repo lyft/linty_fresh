@@ -1,7 +1,7 @@
 import argparse
 import asyncio
 
-from linty_fresh.linters import checkstyle, mypy, pylint, swiftlint
+from linty_fresh.linters import android, checkstyle, mypy, pylint, swiftlint
 from linty_fresh.reporters import github_reporter
 
 from typing import Any, Dict  # noqa
@@ -13,10 +13,11 @@ REPORTERS = {
 }  # type: Dict[str, Any]
 
 LINTERS = {
+    'android': android
+    'checkstyle': checkstyle,
     'mypy': mypy,
     'pylint': pylint,
     'swiftlint': swiftlint,
-    'checkstyle': checkstyle,
 }  # type: Dict[str, Any]
 
 

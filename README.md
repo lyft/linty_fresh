@@ -72,3 +72,4 @@ Supported Linters
 - [Swiftlint](https://github.com/realm/SwiftLint)
 - [Mypy](http://mypy-lang.org/)
 - [Checkstyle](http://checkstyle.sourceforge.net/)
+- [Android](https://developer.android.com/studio/write/lint.html)
