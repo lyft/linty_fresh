@@ -1,7 +1,8 @@
 import argparse
 import asyncio
 
-from linty_fresh.linters import android, checkstyle, mypy, pylint, swiftlint, pmd
+from linty_fresh.linters import android, checkstyle, mypy
+from linty_fresh.linters import pmd, pylint, swiftlint
 from linty_fresh.reporters import github_reporter
 
 from typing import Any, Dict  # noqa
