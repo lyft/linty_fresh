@@ -30,7 +30,7 @@ class GitNotesStorageEngine(object):
             if notes_ref_proc.returncode == 0:
                 note_ref = (
                     await notes_ref_proc.stdout.readline()).decode().strip()
-                if note_ref:    
+                if note_ref:
                     return note_ref
 
     async def get_existing_problems(self) -> Set[Problem]:
