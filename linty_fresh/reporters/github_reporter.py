@@ -156,9 +156,8 @@ Only reporting the first {1}.'''.format(
                     current_file = file_match.groups()[0].strip()
                     right_line_number = -1
                     position = -1
-                    continue
 
-                if current_file:
+                if current_file and not file_match:
                     position += 1
                     hunk_match = HUNK_REGEX.match(line)
                     if hunk_match:
