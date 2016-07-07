@@ -1,8 +1,7 @@
 import re
+from typing import Set
 
 from linty_fresh.problem import Problem
-
-from typing import Set
 
 
 MYPY_LINE_REGEX = re.compile(r'(?P<path>[^:]*):(?P<line>\d*):\s*'

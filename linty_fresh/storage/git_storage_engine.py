@@ -1,10 +1,9 @@
 import asyncio
 import json
 import tempfile
+from typing import Set
 
 from linty_fresh.problem import Problem
-
-from typing import Set
 
 
 MAX_REVISIONS = 10
