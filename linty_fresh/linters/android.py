@@ -1,8 +1,7 @@
-from xml.etree import ElementTree
 from typing import Set
+from xml.etree import ElementTree
 
 from linty_fresh.problem import Problem
-
 
 
 def parse(contents: str) -> Set[Problem]:

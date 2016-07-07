@@ -1,16 +1,13 @@
+import aiohttp
 import argparse
 import asyncio
+from collections import defaultdict
 import json
 import os
 import re
 from typing import Any, Dict, List, MutableMapping, NamedTuple, Set
 
-from collections import defaultdict
-
-import aiohttp
-
 from linty_fresh.problem import Problem
-
 
 
 PR_URL_REGEX = re.compile(r'https?://.*?github.com/'
