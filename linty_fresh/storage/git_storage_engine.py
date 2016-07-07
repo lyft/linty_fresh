@@ -21,6 +21,18 @@ class GitNotesStorageEngine(object):
     def __init__(self, remote: str=None):
         self.remote = remote
 
+    async def get_note_ref(self, last_n_revisions: string) -> None:
+        for line in last_n_revisions_proc.stdout:
+            notes_ref_proc = await asyncio.create_subprocess_exec(
+                'git', 'notes', 'list', line.decode().strip(),
+                **GIT_SUBPROCESS_KWARGS)
+            await notes_ref_proc.wait()
+            if notes_ref_proc.returncode == 0:
+                note_ref = (
+                    await notes_ref_proc.stdout.readline()).decode().strip()
+                if note_ref:
+                    return note_ref
+
     async def get_existing_problems(self) -> Set[Problem]:
         note_ref = ''
         result = set()
@@ -34,16 +46,9 @@ class GitNotesStorageEngine(object):
             'git', 'log', '--skip=1', '-{}'.format(MAX_REVISIONS),
             '--pretty=%H',
             **GIT_SUBPROCESS_KWARGS)
-        async for line in last_n_revisions_proc.stdout:
-            notes_ref_proc = await asyncio.create_subprocess_exec(
-                'git', 'notes', 'list', line.decode().strip(),
-                **GIT_SUBPROCESS_KWARGS)
-            await notes_ref_proc.wait()
-            if notes_ref_proc.returncode == 0:
-                note_ref = (
-                    await notes_ref_proc.stdout.readline()).decode().strip()
-                if note_ref:
-                    break
+
+        note_ref = self.get_note_ref(last_n_revisions_proc.stdout)
+
         await last_n_revisions_proc.wait()
         if note_ref:
             notes_proc = await asyncio.create_subprocess_exec(
