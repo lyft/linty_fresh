@@ -158,10 +158,11 @@ Only reporting the first {1}.'''.format(
                     current_file = file_match.groups()[0].strip()
                     right_line_number = -1
                     position = -1
+                    continue
                 elif line.startswith(NEW_FILE_SECTION_START):
                     current_file = ''
                 if not current_file:
-                    pass
+                    continue
 
                 position += 1
                 hunk_match = HUNK_REGEX.match(line)
