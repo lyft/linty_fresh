@@ -1,11 +1,12 @@
-import aiohttp
 import argparse
 import asyncio
-from collections import defaultdict
 import json
 import os
 import re
+from collections import defaultdict
 from typing import Any, Dict, List, MutableMapping, NamedTuple, Set
+
+import aiohttp
 
 from linty_fresh.problem import Problem
 
