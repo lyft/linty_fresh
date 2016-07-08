@@ -20,7 +20,7 @@ setup(
     packages=find_packages(exclude=['tests*']),
     include_package_data=True,
     setup_requires=[
-        'flake8>=2.2.3',
+        'flake8>=2.2.3, <3.0.0',
         'flake8-blind-except>=0.1.0',
         'flake8-debugger>=1.4.0',
         'flake8-import-order>=0.6.1',

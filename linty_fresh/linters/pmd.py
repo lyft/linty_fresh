@@ -1,3 +1,4 @@
+
 from typing import Set
 from xml.etree import ElementTree
 
@@ -12,11 +13,11 @@ def parse(contents: str) -> Set[Problem]:
         return result
     for file in root.findall('file'):
         file_name = file.get('name')
-        for error in file.findall('error'):
+        for violation in file.findall('violation'):
             result.add(Problem(
                 file_name,
-                error.get('line'),
+                violation.get('beginline'),
                 '{}: {}'.format(
-                    error.get('source'),
-                    error.get('message'))))
+                    violation.get('rule'),
+                    violation.text.strip())))
     return result
