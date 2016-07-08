@@ -29,11 +29,11 @@ class PmdTest(unittest.TestCase):
             self.assertIn(Problem('./DriverRideDrivingToWaypointController.java',
                                   287,
                                   'UnusedFormalParameter: Avoid unused method' 
-                                  ' parameters such as \'ride\'.'),
+                                  " parameters such as 'ride'."),
                           result)
 
             self.assertIn(Problem('./AddCouponView.java',
                                   24,
                                   'UnusedImports: Avoid unused imports such as'
-                                  ' \'me.lyft.android.common.Strings\''),
+                                  " 'me.lyft.android.common.Strings'"),
                           result)
