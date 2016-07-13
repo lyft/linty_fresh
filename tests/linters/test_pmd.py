@@ -1,7 +1,7 @@
 import unittest
 import os
 from linty_fresh.linters import pmd
-from linty_fresh.problem import Problem
+from linty_fresh.models.problem import Problem
 
 class PmdTest(unittest.TestCase):
     def test_empty_parse(self):
@@ -28,7 +28,7 @@ class PmdTest(unittest.TestCase):
             self.assertEqual(2, len(result))
             self.assertIn(Problem('./DriverRideDrivingToWaypointController.java',
                                   287,
-                                  'UnusedFormalParameter: Avoid unused method' 
+                                  'UnusedFormalParameter: Avoid unused method'
                                   " parameters such as 'ride'."),
                           result)
 

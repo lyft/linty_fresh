@@ -1,7 +1,7 @@
 import unittest
 import os
 from linty_fresh.linters import swiftlint
-from linty_fresh.problem import Problem
+from linty_fresh.models.problem import Problem
 
 
 class PyLintTest(unittest.TestCase):

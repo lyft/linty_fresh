@@ -1,7 +1,7 @@
 import unittest
 
 from linty_fresh.linters import android
-from linty_fresh.problem import Problem
+from linty_fresh.models.problem import Problem
 
 
 class AndroidLintTest(unittest.TestCase):

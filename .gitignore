@@ -6,11 +6,12 @@
 # C extensions
 *.so
 
+bazel-*
+
 # Packages
 *.egg
 *.egg-info
 dist
-build
 eggs
 .eggs
 parts

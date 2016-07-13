@@ -11,8 +11,6 @@ from linty_fresh.reporters import github_reporter
 
 from typing import Any, Dict  # noqa
 
-from linty_fresh.storage.git_storage_engine import GitNotesStorageEngine
-
 REPORTERS = {
     'github': github_reporter,
 }  # type: Dict[str, Any]
@@ -63,14 +61,7 @@ async def run_loop(args):
         with open(lint_file_path, 'r') as lint_file:
             problems.update(linter.parse(lint_file.read()))
 
-    storage_engine = GitNotesStorageEngine('origin')
-
     awaitable_array = []
-
-    if args.store_problems:
-        awaitable_array.append(storage_engine.store_problems(problems))
-        existing_problems = await storage_engine.get_existing_problems()
-        problems = problems.difference(existing_problems)
 
     awaitable_array.extend([reporter.report(problems) for
                             reporter in
