@@ -9,7 +9,7 @@ PYLINT_LINE_REGEX = re.compile(r'(?P<path>[^:]*):(?P<line>\d*):\s*'
                                r'(?P<message>.*)')
 
 
-def parse(contents: str) -> Set[Problem]:
+def parse(contents: str, **kwargs) -> Set[Problem]:
     result = set()  # type: Set[Problem]
     for line in contents.splitlines():
         match = PYLINT_LINE_REGEX.match(line)

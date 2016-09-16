@@ -10,7 +10,7 @@ SWIFTLINT_LINE_REGEX = re.compile(r'(?P<path>[^:]*):(?P<line>\d*):'
                                   r'\s*(?P<message>.*)')
 
 
-def parse(contents: str) -> Set[Problem]:
+def parse(contents: str, **kwargs) -> Set[Problem]:
     result = set()  # type: Set[Problem]
     for line in contents.splitlines():
         match = SWIFTLINT_LINE_REGEX.match(line)

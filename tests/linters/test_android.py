@@ -3,19 +3,13 @@ import unittest
 from linty_fresh.linters import android
 from linty_fresh.problem import Problem
 
-
-class AndroidLintTest(unittest.TestCase):
-    def test_empty_parse(self):
-        self.assertEqual(set(), android.parse(''))
-
-    def test_parse_errors(self):
-        test_string = """\
+test_string = """\
 <?xml version="1.0" encoding="UTF-8"?>
 <issues format="4" by="lint 25.1.6">
 
     <issue
         id="ScrollViewSize"
-        severity="Warning"
+        severity="Error"
         message="This LinearLayout should use `android:layout_height=&quot;wrap_content&quot;`"
         category="Correctness"
         priority="7"
@@ -53,7 +47,13 @@ If you want the methods to just perform ASCII replacement, for example to conver
 </issues>
 """
 
-        result = android.parse(test_string)
+
+class AndroidLintTest(unittest.TestCase):
+    def test_empty_parse(self):
+        self.assertEqual(set(), android.parse('', fail_warnings=True))
+
+    def test_parse_all(self):
+        result = android.parse(test_string, fail_warnings=True)
         self.assertEqual(2, len(result))
         self.assertIn(Problem('scripts/run_tests.sh',
                                       15,
@@ -68,4 +68,14 @@ If you want the methods to just perform ASCII replacement, for example to conver
                               'Implicitly using the default locale is a '
                               'common source of bugs: Use '
                               '`toLowerCase(Locale)` instead'),
+                      result)
+
+    def test_parse_errors_only(self):
+        result = android.parse(test_string, fail_warnings=False)
+        self.assertEqual(1, len(result))
+        self.assertIn(Problem('scripts/run_tests.sh',
+                                      15,
+                                      'ScrollView size validation: This LinearLayout '
+                                      'should use '
+                                      '`android:layout_height="wrap_content"`'),
                       result)
