@@ -13,7 +13,7 @@ def parse(contents: str, **kwargs) -> Set[Problem]:
     for issue in root.findall('issue'):
         location = issue.getchildren()[0]
         if issue.get('severity') == 'Warning' and not kwargs.get(
-                "fail_warnings"):
+                'fail_warnings'):
             pass
         else:
             result.add(Problem(
