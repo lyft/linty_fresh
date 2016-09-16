@@ -4,7 +4,7 @@ from xml.etree import ElementTree
 from linty_fresh.problem import Problem
 
 
-def parse(contents: str, fail_warnings: bool) -> Set[Problem]:
+def parse(contents: str, **kwargs) -> Set[Problem]:
     result = set()  # type: Set[Problem]
     try:
         root = ElementTree.fromstring(contents)
@@ -12,7 +12,8 @@ def parse(contents: str, fail_warnings: bool) -> Set[Problem]:
         return result
     for issue in root.findall('issue'):
         location = issue.getchildren()[0]
-        if issue.get('severity') == 'Warning' and not fail_warnings:
+        if issue.get('severity') == 'Warning' and not kwargs.get(
+                "fail_warnings"):
             pass
         else:
             result.add(Problem(

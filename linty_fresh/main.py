@@ -63,11 +63,8 @@ async def run_loop(args):
     linter = LINTERS[args.linter]
     for lint_file_path in args.files:
         with open(lint_file_path, 'r') as lint_file:
-            if args.linter == 'android':
-                problems.update(linter.parse(
-                    lint_file.read(), args.fail_warnings))
-            else:
-                problems.update(linter.parse(lint_file.read()))
+            problems.update(linter.parse(
+                lint_file.read(), **args))
 
     storage_engine = GitNotesStorageEngine('origin')
 
