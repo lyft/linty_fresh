@@ -39,7 +39,7 @@ def create_parser() -> argparse.ArgumentParser:
     parser.add_argument('files', type=str, nargs='+',
                         help='The lint file being parsed.')
     parser.add_argument('--fail-warnings', default=True, action='store_true',
-                        help='Fail Android linter on warnings.')
+                        help='(ANDROID ONLY) Fail Android linter on warnings.')
     for name, reporter in REPORTERS.items():
         reporter.register_arguments(parser)
     return parser
@@ -64,10 +64,10 @@ async def run_loop(args):
     for lint_file_path in args.files:
         with open(lint_file_path, 'r') as lint_file:
             if args.linter == 'android':
-                problems.update(linter.parse(lint_file.read()))
-            else:
                 problems.update(linter.parse(
                     lint_file.read(), args.fail_warnings))
+            else:
+                problems.update(linter.parse(lint_file.read()))
 
     storage_engine = GitNotesStorageEngine('origin')
 
