@@ -50,10 +50,10 @@ If you want the methods to just perform ASCII replacement, for example to conver
 
 class AndroidLintTest(unittest.TestCase):
     def test_empty_parse(self):
-        self.assertEqual(set(), android.parse('', fail_warnings=True))
+        self.assertEqual(set(), android.parse('', pass_warnings=False))
 
     def test_parse_all(self):
-        result = android.parse(test_string, fail_warnings=True)
+        result = android.parse(test_string, pass_warnings=False)
         self.assertEqual(2, len(result))
         self.assertIn(Problem('scripts/run_tests.sh',
                                       15,
@@ -71,7 +71,7 @@ class AndroidLintTest(unittest.TestCase):
                       result)
 
     def test_parse_errors_only(self):
-        result = android.parse(test_string, fail_warnings=False)
+        result = android.parse(test_string, pass_warnings=True)
         self.assertEqual(1, len(result))
         self.assertIn(Problem('scripts/run_tests.sh',
                                       15,
