@@ -4,7 +4,7 @@ from xml.etree import ElementTree
 from linty_fresh.problem import Problem
 
 
-def parse(contents: str, pass_warnings: bool) -> Set[Problem]:
+def parse(contents: str, pass_warnings: bool, **kwargs) -> Set[Problem]:
     result = set()  # type: Set[Problem]
     try:
         root = ElementTree.fromstring(contents)
