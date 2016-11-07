@@ -21,12 +21,11 @@ setup(
     include_package_data=True,
     setup_requires=[
         'flake8>=2.2.3, <3.0.0',
-        'flake8-blind-except>=0.1.0',
+        'flake8-blind-except>=0.1.1',
         'flake8-debugger>=1.4.0',
-        'flake8-import-order>=0.6.1',
-        'flake8-quotes>=0.1.1',
-        'pep8==1.5.7',
-        'pep8-naming>=0.3.3',
+        'flake8-import-order>=0.10',
+        'flake8-quotes>=0.8.1',
+        'pycodestyle>=2.0.0, <2.1.0',
     ],
     install_requires=[
         'aiohttp>=0.19.0',
