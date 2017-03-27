@@ -4,7 +4,7 @@ from linty_fresh.linters import checkstyle
 from linty_fresh.problem import Problem
 
 
-class PyLintTest(unittest.TestCase):
+class CheckstyleTest(unittest.TestCase):
     def test_empty_parse(self):
         self.assertEqual(set(), checkstyle.parse(''))
 
