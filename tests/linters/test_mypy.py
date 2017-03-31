@@ -4,7 +4,7 @@ from linty_fresh.linters import mypy
 from linty_fresh.problem import Problem
 
 
-class PyLintTest(unittest.TestCase):
+class MypyTest(unittest.TestCase):
     def test_empty_parse(self):
         self.assertEqual(set(), mypy.parse(''))
 

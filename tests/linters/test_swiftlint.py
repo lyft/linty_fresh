@@ -4,7 +4,7 @@ from linty_fresh.linters import swiftlint
 from linty_fresh.problem import Problem
 
 
-class PyLintTest(unittest.TestCase):
+class SwiftlintTest(unittest.TestCase):
     def test_empty_parse(self):
         self.assertEqual(set(), swiftlint.parse(''))
 
