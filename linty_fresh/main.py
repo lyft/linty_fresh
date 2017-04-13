@@ -4,6 +4,7 @@ import asyncio
 from linty_fresh.linters import android
 from linty_fresh.linters import checkstyle
 from linty_fresh.linters import mypy
+from linty_fresh.linters import passthrough
 from linty_fresh.linters import pmd
 from linty_fresh.linters import pylint
 from linty_fresh.linters import swiftlint
@@ -21,9 +22,10 @@ LINTERS = {
     'android': android,
     'checkstyle': checkstyle,
     'mypy': mypy,
+    'passthrough': passthrough,
+    'pmd': pmd,
     'pylint': pylint,
     'swiftlint': swiftlint,
-    'pmd': pmd,
 }  # type: Dict[str, Any]
 
 
