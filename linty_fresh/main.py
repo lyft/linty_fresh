@@ -9,6 +9,7 @@ from linty_fresh.linters import pmd
 from linty_fresh.linters import pylint
 from linty_fresh.linters import swiftlint
 from linty_fresh.linters import xcodebuild
+from linty_fresh.linters import buck_unittest
 from linty_fresh.reporters import github_reporter
 
 from typing import Any, Dict  # noqa
@@ -28,6 +29,7 @@ LINTERS = {
     'pylint': pylint,
     'swiftlint': swiftlint,
     'xcodebuild': xcodebuild,
+    'androidunittest': buck_unittest
 }  # type: Dict[str, Any]
 
 
