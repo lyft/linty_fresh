@@ -37,3 +37,43 @@ class Problem(object):
         sorted_problems = sorted(problems, key=key_func)
         return [(location, list(problems)) for (location, problems) in
                 itertools.groupby(sorted_problems, key_func)]
+
+
+class TestProblem(object):
+    def __init__(self, test_group: str, test_name: str, message: str, stack_trace: str) -> None:
+        self.test_group = test_group
+        self.test_name = test_name
+        self.message = message
+        self.stack_trace = stack_trace
+
+    def __hash__(self):
+        return hash((self.test_group, self.test_name, self.message, self.stack_trace))
+
+    def __eq__(self, other):
+        return ((self.test_group, self.test_name, self.message, self.stack_trace) ==
+                (other.test_group, other.test_name, other.message, other.stack_trace))
+
+    def to_json(self):
+        return OrderedDict({
+            'test_group': self.test_group,
+            'test_name': self.test_name,
+            'message': self.message,
+            'stack_trace': self.stack_trace
+        })
+
+    @staticmethod
+    def from_json(json_object) -> 'Problem':
+        return TestProblem(json_object['test_group'],
+                           json_object['test_name'],
+                           json_object['message'],
+                           json_object['stack_trace']
+                           )
+
+    @staticmethod
+    def group_by_group(problems):
+        def key_func(problem):
+            return problem.test_group
+
+        sorted_problems = sorted(problems, key=key_func)
+        return [(location, list(problems)) for (location, problems) in
+                itertools.groupby(sorted_problems, key_func)]
