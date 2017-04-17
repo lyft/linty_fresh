@@ -41,10 +41,10 @@ class Problem(object):
 
 class TestProblem(object):
     def __init__(self, test_group: str, test_name: str, message: str, stack_trace: str) -> None:
-        self.test_group = test_group
-        self.test_name = test_name
-        self.message = message
-        self.stack_trace = stack_trace
+        self.test_group = test_group.strip()
+        self.test_name = test_name.strip()
+        self.message = message.strip()
+        self.stack_trace = stack_trace.strip()
 
     def __hash__(self):
         return hash((self.test_group, self.test_name, self.message, self.stack_trace))
@@ -62,7 +62,7 @@ class TestProblem(object):
         })
 
     @staticmethod
-    def from_json(json_object) -> 'Problem':
+    def from_json(json_object) -> 'TestProblem':
         return TestProblem(json_object['test_group'],
                            json_object['test_name'],
                            json_object['message'],

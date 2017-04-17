@@ -76,11 +76,11 @@ class BuckUnittestTest(unittest.TestCase):
         self.assertIn(TestProblem("TEST_GROUP_NAME_1",
                                   "TEST_TR_NAME_1",
                                   "TEST_MESSAGE_TEXT_1",
-                                  "TEST_STRACK_TRACE_TEXT_1"
+                                  "TEST_STACK_TRACE_TEXT_1"
                                   ), result)
 
         self.assertIn(TestProblem("TEST_GROUP_NAME_2",
                                   "TEST_TR_NAME_2",
                                   "TEST_MESSAGE_TEXT_2",
-                                  "TEST_STRACK_TRACE_TEXT_2"
+                                  "TEST_STACK_TRACE_TEXT_2"
                                   ), result)
