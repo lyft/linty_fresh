@@ -4,11 +4,11 @@ import json
 import os
 import re
 from collections import defaultdict
-from typing import Any, Dict, List, MutableMapping, NamedTuple, Set
+from typing import Any, Dict, List, MutableMapping, NamedTuple, Set,  TypeVar
 
 import aiohttp
 
-from linty_fresh.problem import Problem
+from linty_fresh.problem import Problem, TestProblem
 
 
 PR_URL_REGEX = re.compile(r'https?://.*?github.com/'
@@ -27,6 +27,7 @@ ExistingGithubMessage = NamedTuple('ExistingGithubMessage',
                                     ('position', int),
                                     ('body', str)])
 
+GenericProblem = TypeVar("GenericProblem", Problem, TestProblem)
 
 class GithubReporter(object):
     def __init__(self,
@@ -41,8 +42,11 @@ class GithubReporter(object):
         self.pr = pr_number
         self.commit = commit
 
-    async def report(self, problems: List[Problem]) -> None:
-        grouped_problems = Problem.group_by_path_and_line(problems)
+    async def report(self, problems: List[GenericProblem]) -> None:
+        if isinstance(list(problems)[0], TestProblem):
+            grouped_problems = TestProblem.group_by_group(problems)
+        else:
+            grouped_problems = Problem.group_by_path_and_line(problems)
 
         headers = {
             'Authorization': 'token {}'.format(self.auth_token),

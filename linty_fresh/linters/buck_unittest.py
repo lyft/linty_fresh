@@ -7,11 +7,9 @@ def parse(contents: str, **kwargs) -> Set[TestProblem]:
     result = set()
     try:
         root = ElementTree.fromstring(contents)
-        pdb.set_trace()
     except ElementTree.ParseError:
         return result
     for test in root.findall('test'):
-        pdb.set_trace()
         if test.get('status') == "FAIL":
             test_group = test.get('name')
             for tr in test.findall('testresult'):
@@ -22,7 +20,7 @@ def parse(contents: str, **kwargs) -> Set[TestProblem]:
                         message = m.text
                 for st in tr.findall('stacktrace'):
                     if st.text:
-                        stack_trace = st
+                        stack_trace = st.text
                 if stack_trace and message:
                     test_name = tr.get('name')
                     result.add(TestProblem(
@@ -31,3 +29,4 @@ def parse(contents: str, **kwargs) -> Set[TestProblem]:
                         message,
                         stack_trace
                     ))
+    return result

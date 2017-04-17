@@ -71,7 +71,6 @@ async def run_loop(args):
         with open(lint_file_path, 'r') as lint_file:
             problems.update(linter.parse(
                 lint_file.read(), **vars(args)))
-
     storage_engine = GitNotesStorageEngine('origin')
 
     awaitable_array = []
