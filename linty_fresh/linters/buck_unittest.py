@@ -1,6 +1,6 @@
+from typing import Set
 from xml.etree import ElementTree
 from linty_fresh.problem import TestProblem
-from typing import Set
 
 
 def parse(contents: str, **kwargs) -> Set[TestProblem]:
