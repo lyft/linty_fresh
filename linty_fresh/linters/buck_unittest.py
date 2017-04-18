@@ -1,6 +1,6 @@
-from typing import Set
 from xml.etree import ElementTree
 from linty_fresh.problem import TestProblem
+from typing import Set
 
 
 def parse(contents: str, **kwargs) -> Set[TestProblem]:
@@ -10,7 +10,7 @@ def parse(contents: str, **kwargs) -> Set[TestProblem]:
     except ElementTree.ParseError:
         return result
     for test in root.findall('test'):
-        if test.get('status') == "FAIL":
+        if test.get('status') == 'FAIL':
             test_group = test.get('name')
             for tr in test.findall('testresult'):
                 message = None
