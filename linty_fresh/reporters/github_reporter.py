@@ -27,7 +27,8 @@ ExistingGithubMessage = NamedTuple('ExistingGithubMessage',
                                     ('position', int),
                                     ('body', str)])
 
-GenericProblem = TypeVar("GenericProblem", Problem, TestProblem)
+GenericProblem = TypeVar('GenericProblem', Problem, TestProblem)
+
 
 class GithubReporter(object):
     def __init__(self,
