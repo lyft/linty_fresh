@@ -1,19 +1,11 @@
 import argparse
 import asyncio
-
-from linty_fresh.linters import android
-from linty_fresh.linters import checkstyle
-from linty_fresh.linters import mypy
-from linty_fresh.linters import passthrough
-from linty_fresh.linters import pmd
-from linty_fresh.linters import pylint
-from linty_fresh.linters import swiftlint
-from linty_fresh.linters import xcodebuild
-from linty_fresh.linters import buck_unittest
-from linty_fresh.reporters import github_reporter
-
 from typing import Any, Dict  # noqa
 
+from linty_fresh.linters import (android, buck_unittest, checkstyle, mypy,
+                                 passthrough, pmd, pylint, swiftlint,
+                                 xcodebuild)
+from linty_fresh.reporters import github_reporter
 from linty_fresh.storage.git_storage_engine import GitNotesStorageEngine
 
 REPORTERS = {
