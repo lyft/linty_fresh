@@ -8,7 +8,7 @@ from typing import Any, Dict, List, MutableMapping, NamedTuple, Set
 
 import aiohttp
 
-from linty_fresh.problem import Problem
+from linty_fresh.models.problem import Problem
 
 
 PR_URL_REGEX = re.compile(r'https?://.*?github.com/'
@@ -26,6 +26,7 @@ ExistingGithubMessage = NamedTuple('ExistingGithubMessage',
                                    [('path', str),
                                     ('position', int),
                                     ('body', str)])
+
 
 
 class GithubReporter(object):

@@ -1,7 +1,7 @@
 import unittest
 
 from linty_fresh.linters import android
-from linty_fresh.problem import Problem
+from linty_fresh.models.problem import Problem
 
 test_string = """\
 <?xml version="1.0" encoding="UTF-8"?>

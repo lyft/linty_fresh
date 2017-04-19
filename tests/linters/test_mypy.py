@@ -1,7 +1,7 @@
 import unittest
 
 from linty_fresh.linters import mypy
-from linty_fresh.problem import Problem
+from linty_fresh.models.problem import Problem
 
 
 class MypyTest(unittest.TestCase):

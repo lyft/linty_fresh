@@ -2,7 +2,7 @@ import os
 import re
 from typing import Set
 
-from linty_fresh.problem import Problem
+from linty_fresh.models.problem import Problem
 
 
 SWIFTLINT_LINE_REGEX = re.compile(r'(?P<path>[^:]*):(?P<line>\d*):'

@@ -7,8 +7,11 @@ from mock import MagicMock, call, patch
 
 from linty_fresh.reporters import github_reporter
 from linty_fresh.reporters.github_reporter import GithubReporter
-from linty_fresh.problem import Problem
-from ..utils.fake_client_session import FakeClientResponse, FakeClientSession
+from linty_fresh.models.problem import Problem
+from tests.utils.fake_client_session import (
+  FakeClientResponse,
+  FakeClientSession
+)
 
 
 class GithubReporterTest(unittest.TestCase):

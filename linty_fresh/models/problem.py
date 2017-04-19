@@ -16,7 +16,7 @@ class Problem(object):
         return ((self.path, self.line, self.message) ==
                 (other.path, other.line, other.message))
 
-    def to_json(self):
+    def to_json(self) -> OrderedDict:
         return OrderedDict({
             'path': self.path,
             'line': self.line,
