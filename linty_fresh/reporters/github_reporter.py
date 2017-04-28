@@ -239,9 +239,10 @@ def create_reporter(args: Any) -> GithubReporter:
     if not args.pr_url or not args.commit:
         raise Exception('Must specify both a pr_url and a commit to use the '
                         'github reporter.')
-    auth_token = os.getenv('GITHUB_AUTH_TOKEN')
+    auth_token = args.github_token or os.getenv('GITHUB_AUTH_TOKEN')
     if not auth_token:
         raise Exception('Environment Variable $GITHUB_AUTH_TOKEN must be set '
+                        'or --github-token must be passed '
                         'to use the github reporter.')
     match = PR_URL_REGEX.match(args.pr_url)
     if match:
