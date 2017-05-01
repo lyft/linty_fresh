@@ -72,7 +72,7 @@ async def run_loop(args):
         existing_problems = await storage_engine.get_existing_problems()
         problems = problems.difference(existing_problems)
 
-    awaitable_array.extend([reporter.report(problems) for
+    awaitable_array.extend([reporter.report(linter, problems) for
                             reporter in
                             reporters])
     await asyncio.gather(*awaitable_array)

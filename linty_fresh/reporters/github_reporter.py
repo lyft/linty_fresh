@@ -31,6 +31,7 @@ GenericProblem = TypeVar('GenericProblem', Problem, TestProblem)
 
 
 class GithubReporter(object):
+
     def __init__(self,
                  auth_token: str,
                  organization: str,
@@ -43,7 +44,8 @@ class GithubReporter(object):
         self.pr = pr_number
         self.commit = commit
 
-    async def report(self, problems: List[GenericProblem]) -> None:
+    async def report(self, reporter: str,
+                     problems: List[GenericProblem]) -> None:
         if isinstance(list(problems)[0], TestProblem):
             grouped_problems = TestProblem.group_by_group(problems)
         else:
@@ -61,8 +63,10 @@ class GithubReporter(object):
             pr_url = self._get_pr_url()
             no_matching_line_number = []
             for location, problems_for_line in grouped_problems:
-                message_for_line = [':sparkles:Linty Fresh Says:sparkles::',
-                                    '']
+                message_for_line = [
+                    ':sparkles:{0} says:sparkles::'.format(reporter),
+                    ''
+                ]
 
                 reported_problems_for_line = set()
 
@@ -99,11 +103,11 @@ class GithubReporter(object):
                     no_matching_line_number.append((location,
                                                     problems_for_line))
             if lint_errors > MAX_LINT_ERROR_REPORTS:
-                message = ''':sparkles:Linty Fresh Says:sparkles::
+                message = ''':sparkles:{0} says:sparkles::
 
-Too many lint errors to report inline!  {0} lines have a problem.
-Only reporting the first {1}.'''.format(
-                    lint_errors, MAX_LINT_ERROR_REPORTS)
+Too many lint errors to report inline!  {1} lines have a problem.
+Only reporting the first {2}.'''.format(
+                    reporter, lint_errors, MAX_LINT_ERROR_REPORTS)
                 data = json.dumps({
                     'body': message
                 })
@@ -121,8 +125,9 @@ Only reporting the first {1}.'''.format(
                     for problem in problems_for_line:
                         no_matching_line_messages.append('\t{0}'.format(
                             problem.message))
-                message = ('Linters found some problems with lines not '
-                           'modified by this commit:\n```\n{0}\n```'.format(
+                message = ('{0} found some problems with lines not '
+                           'modified by this commit:\n```\n{1}\n```'.format(
+                               reporter,
                                '\n'.join(no_matching_line_messages)))
                 data = json.dumps({
                     'body': message
