@@ -92,7 +92,7 @@ class GithubReporterTest(unittest.TestCase):
                 'commit_id': 'abc123',
                 'path': 'another_file',
                 'body': textwrap.dedent('''\
-                    :sparkles:unit-test-linter says:sparkles::
+                    unit-test-linter says:
 
                     ```
                     This is OK
@@ -109,7 +109,7 @@ class GithubReporterTest(unittest.TestCase):
                 'commit_id': 'abc123',
                 'path': 'some_dir/some_file',
                 'body': textwrap.dedent('''\
-                    :sparkles:unit-test-linter says:sparkles::
+                    unit-test-linter says:
 
                     ```
                     this made me sad
@@ -127,7 +127,7 @@ class GithubReporterTest(unittest.TestCase):
                 'commit_id': 'abc123',
                 'path': 'another_file',
                 'body': textwrap.dedent('''\
-                    :sparkles:unit-test-linter says:sparkles::
+                    unit-test-linter says:
 
                     (From line 52)
                     ```
@@ -178,7 +178,7 @@ class GithubReporterTest(unittest.TestCase):
         loop.run_until_complete(async_report)
 
         overflow_message = textwrap.dedent('''\
-            :sparkles:unit-test-linter says:sparkles::
+            unit-test-linter says:
 
             Too many lint errors to report inline!  12 lines have a problem.
             Only reporting the first 10.''')
@@ -205,7 +205,7 @@ class GithubReporterTest(unittest.TestCase):
                  'path': 'another_file',
                  'position': 3,
                  'body': textwrap.dedent('''\
-                     :sparkles:unit-test-linter says:sparkles::
+                     unit-test-linter says:
 
                      ```
                      I am a duplicate!
