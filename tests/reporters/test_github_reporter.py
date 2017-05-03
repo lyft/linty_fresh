@@ -59,7 +59,7 @@ class GithubReporterTest(unittest.TestCase):
             mock_client_session)
 
         reporter = github_reporter.create_reporter(mock_args)
-        async_report = reporter.report([
+        async_report = reporter.report('unit-test-linter', [
             Problem('some_dir/some_file', 40, 'this made me sad'),
             Problem('some_dir/some_file', 40, 'really sad'),
             Problem('another_file', 2, 'This is OK'),
@@ -92,7 +92,7 @@ class GithubReporterTest(unittest.TestCase):
                 'commit_id': 'abc123',
                 'path': 'another_file',
                 'body': textwrap.dedent('''\
-                    :sparkles:Linty Fresh Says:sparkles::
+                    unit-test-linter says:
 
                     ```
                     This is OK
@@ -109,7 +109,7 @@ class GithubReporterTest(unittest.TestCase):
                 'commit_id': 'abc123',
                 'path': 'some_dir/some_file',
                 'body': textwrap.dedent('''\
-                    :sparkles:Linty Fresh Says:sparkles::
+                    unit-test-linter says:
 
                     ```
                     this made me sad
@@ -127,7 +127,7 @@ class GithubReporterTest(unittest.TestCase):
                 'commit_id': 'abc123',
                 'path': 'another_file',
                 'body': textwrap.dedent('''\
-                    :sparkles:Linty Fresh Says:sparkles::
+                    unit-test-linter says:
 
                     (From line 52)
                     ```
@@ -143,7 +143,11 @@ class GithubReporterTest(unittest.TestCase):
             },
             data=json.dumps({
                 'body': textwrap.dedent('''\
-                '''),
+                    unit-test-linter found some problems with lines not modified by this commit:
+                    ```
+                    missing_file:42:
+                    \tMissing file comment!!!
+                    ```'''),
             }, sort_keys=True)
         )
 
@@ -153,6 +157,7 @@ class GithubReporterTest(unittest.TestCase):
         self.assertIn(first_comment, fake_client_session.calls)
         self.assertIn(second_comment, fake_client_session.calls)
         self.assertIn(close_enough_comment, fake_client_session.calls)
+        self.assertIn(missing_file_call, fake_client_session.calls)
 
     @patch('linty_fresh.reporters.github_reporter.aiohttp.ClientSession')
     @patch('os.getenv')
@@ -167,13 +172,13 @@ class GithubReporterTest(unittest.TestCase):
 
         problems = [Problem('another_file', x, 'Wat') for x in range(1, 13)]
 
-        async_report = reporter.report(problems)
+        async_report = reporter.report('unit-test-linter', problems)
 
         loop = asyncio.get_event_loop()
         loop.run_until_complete(async_report)
 
         overflow_message = textwrap.dedent('''\
-            :sparkles:Linty Fresh Says:sparkles::
+            unit-test-linter says:
 
             Too many lint errors to report inline!  12 lines have a problem.
             Only reporting the first 10.''')
@@ -200,7 +205,7 @@ class GithubReporterTest(unittest.TestCase):
                  'path': 'another_file',
                  'position': 3,
                  'body': textwrap.dedent('''\
-                     :sparkles:Linty Fresh Says:sparkles::
+                     unit-test-linter says:
 
                      ```
                      I am a duplicate!

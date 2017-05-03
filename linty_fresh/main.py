@@ -31,6 +31,8 @@ def create_parser() -> argparse.ArgumentParser:
                         help='The reporter to use when reporting errors.')
     parser.add_argument('--linter', type=str, required=True,
                         help='The type of lint file to parse.')
+    parser.add_argument('--linter_name', type=str, default=None,
+                        help='Override linter name for PR reporting')
     parser.add_argument('--store_problems', default=False, action='store_true',
                         help='Whether or not to store lint errors as git '
                              'notes and filter out problems')
@@ -38,6 +40,7 @@ def create_parser() -> argparse.ArgumentParser:
                         help='The lint file being parsed.')
     parser.add_argument('--pass-warnings', default=False, action='store_true',
                         help='(ANDROID ONLY) Pass Android linter on warnings.')
+
     for name, reporter in REPORTERS.items():
         reporter.register_arguments(parser)
     return parser
@@ -72,7 +75,8 @@ async def run_loop(args):
         existing_problems = await storage_engine.get_existing_problems()
         problems = problems.difference(existing_problems)
 
-    awaitable_array.extend([reporter.report(problems) for
+    linter_name = args.linter_name or linter
+    awaitable_array.extend([reporter.report(linter_name, problems) for
                             reporter in
                             reporters])
     await asyncio.gather(*awaitable_array)
