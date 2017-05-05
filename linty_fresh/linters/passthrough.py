@@ -4,4 +4,7 @@ from linty_fresh.problem import Problem
 
 
 def parse(contents: str, **kwargs) -> Set[Problem]:
-    return set(Problem('', 0, x) for x in contents.splitlines())
+    if contents:
+        return set([Problem('', 0, contents)])
+    else:
+        return set()

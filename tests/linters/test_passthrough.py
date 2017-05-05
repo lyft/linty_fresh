@@ -14,7 +14,8 @@ class PassthroughTest(unittest.TestCase):
         ]
 
         result = passthrough.parse('\n'.join(test_string))
-        self.assertEqual(2, len(result))
+        self.assertEqual(1, len(result))
 
-        self.assertIn(Problem('', 0, 'Something happened!'), result)
-        self.assertIn(Problem('', 0, "More stuff 'happened'"), result)
+        self.assertIn(Problem('', 0,
+                              'Something happened!\n'
+                              "More stuff 'happened'"), result)
