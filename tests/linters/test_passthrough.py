@@ -9,8 +9,8 @@ class PassthroughTest(unittest.TestCase):
 
     def test_parse_errors(self):
         test_string = [
-            'Something happened!',
-            "More stuff 'happened'",
+            '        Something happened!',
+            "More stuff 'happened'\n\n",
         ]
 
         result = passthrough.parse('\n'.join(test_string))
