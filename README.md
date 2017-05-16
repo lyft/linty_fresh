@@ -3,7 +3,7 @@
 
 Keep your codebase sparkly clean with the power of **LINT**!
 
-Linty Fresh parses lint errors and report them back to Github as comments on a
+Linty Fresh parses lint errors and report them back to GitHub as comments on a
 pull request.
 
 ![Linty Fresh](http://i.imgur.com/epWogrw.png)
@@ -38,7 +38,7 @@ python3 setup.py install
 Usage
 -----
 
-We recommend you create a Github user for your organization used just for
+We recommend you create a GitHub user for your organization used just for
 commenting on PRs.  [Create a token](https://github.com/settings/tokens/new)
 for that user that only has access to the `repo` scope (or `public_repo` scope
 for OSS projects).  Then add that token as a secret to your CI system as the
@@ -50,7 +50,7 @@ See Travis CI documentation [storing encrypted secrets][] for more information.
 If you are looking for a good secret management system to store secrets like
 this, check out [Confidant](https://github.com/lyft/confidant/).
 
-Once you have your Github user, integrating Linty Fresh is easy!  Assuming you
+Once you have your GitHub user, integrating Linty Fresh is easy!  Assuming you
 are running PyLint and the output is going to `pylint.txt`, add the following
 snippet to the bottom of your automation script.
 
