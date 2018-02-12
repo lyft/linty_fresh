@@ -6,7 +6,8 @@ import unittest
 from mock import MagicMock, call, patch
 
 from linty_fresh.reporters import github_reporter
-from linty_fresh.reporters.github_reporter import GithubReporter
+from linty_fresh.reporters.github_reporter import (GithubReporter,
+                                                   ExistingGithubMessage)
 from linty_fresh.problem import Problem
 from ..utils.fake_client_session import FakeClientResponse, FakeClientSession
 
@@ -83,6 +84,11 @@ class GithubReporterTest(unittest.TestCase):
             headers={
                 'Authorization': 'token MY_TOKEN'
             })
+        existing_issues_request = call.get(
+            'https://api.github.com/repos/foo/bar/issues/1234/comments',
+            headers={
+                'Authorization': 'token MY_TOKEN'
+            })
         first_comment = call.post(
             'https://api.github.com/repos/foo/bar/pulls/1234/comments',
             headers={
@@ -143,7 +149,7 @@ class GithubReporterTest(unittest.TestCase):
             },
             data=json.dumps({
                 'body': textwrap.dedent('''\
-                    unit-test-linter found some problems with lines not modified by this commit:
+                    unit-test-linter says: I found some problems with lines not modified by this commit:
                     ```
                     missing_file:42:
                     \tMissing file comment!!!
@@ -151,9 +157,10 @@ class GithubReporterTest(unittest.TestCase):
             }, sort_keys=True)
         )
 
-        self.assertEqual(6, len(fake_client_session.calls))
+        self.assertEqual(7, len(fake_client_session.calls))
         self.assertIn(diff_request, fake_client_session.calls)
         self.assertIn(existing_comments_request, fake_client_session.calls)
+        self.assertIn(existing_issues_request, fake_client_session.calls)
         self.assertIn(first_comment, fake_client_session.calls)
         self.assertIn(second_comment, fake_client_session.calls)
         self.assertIn(close_enough_comment, fake_client_session.calls)
@@ -191,9 +198,61 @@ class GithubReporterTest(unittest.TestCase):
                 'body': overflow_message,
             }, sort_keys=True)
         )
+        delete_previous_call = call.delete(
+            'https://api.github.com/repos/foo/bar/pulls/comments/1',
+            headers={
+                'Authorization': 'token MY_TOKEN'
+            }
+        )
 
         self.assertIn(overflow_call, fake_client_session.calls)
-        self.assertEqual(3 + github_reporter.MAX_LINT_ERROR_REPORTS,
+        self.assertIn(delete_previous_call, fake_client_session.calls)
+        self.assertEqual(5 + github_reporter.MAX_LINT_ERROR_REPORTS,
+                         len(fake_client_session.calls))
+
+    @patch('linty_fresh.reporters.github_reporter.aiohttp.ClientSession')
+    @patch('os.getenv')
+    def test_do_not_delete_old_comments(self,
+                                        mock_getenv,
+                                        mock_client_session):
+        mock_args, fake_client_session = self.create_mock_pr(
+            mock_getenv,
+            mock_client_session)
+
+        mock_args.delete_previous_comments = False
+        reporter = github_reporter.create_reporter(mock_args)
+
+        problems = [Problem('another_file', x, 'Wat') for x in range(1, 13)]
+
+        async_report = reporter.report('unit-test-linter', problems)
+
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(async_report)
+
+        overflow_message = textwrap.dedent('''\
+            unit-test-linter says:
+
+            Too many lint errors to report inline!  12 lines have a problem.
+            Only reporting the first 10.''')
+        overflow_call = call.post(
+            'https://api.github.com/repos/foo/bar/issues/1234/comments',
+            headers={
+                'Authorization': 'token MY_TOKEN'
+            },
+            data=json.dumps({
+                'body': overflow_message,
+            }, sort_keys=True)
+        )
+        delete_previous_call = call.delete(
+            'https://api.github.com/repos/foo/bar/pulls/comments/1',
+            headers={
+                'Authorization': 'token MY_TOKEN'
+            }
+        )
+
+        self.assertIn(overflow_call, fake_client_session.calls)
+        self.assertNotIn(delete_previous_call, fake_client_session.calls)
+        self.assertEqual(4 + github_reporter.MAX_LINT_ERROR_REPORTS,
                          len(fake_client_session.calls))
 
     def create_mock_pr(self, mock_getenv, mock_client_session):
@@ -202,6 +261,7 @@ class GithubReporterTest(unittest.TestCase):
                 FakeClientResponse(GithubReporterTest.github_patch),
             ('https://api.github.com/repos/foo/bar/pulls/1234/comments',
              'get'): FakeClientResponse(json.dumps([{
+                 'id': 1,
                  'path': 'another_file',
                  'position': 3,
                  'body': textwrap.dedent('''\
@@ -213,7 +273,11 @@ class GithubReporterTest(unittest.TestCase):
             ('https://api.github.com/repos/foo/bar/pulls/1234/comments',
              'post'): FakeClientResponse(''),
             ('https://api.github.com/repos/foo/bar/issues/1234/comments',
-             'post'): FakeClientResponse('')
+             'post'): FakeClientResponse(''),
+            ('https://api.github.com/repos/foo/bar/issues/1234/comments',
+             'get'): FakeClientResponse('[]'),
+            ('https://api.github.com/repos/foo/bar/pulls/comments/1',
+             'delete'): FakeClientResponse('')
         })
 
         def session_init_side_effect(headers=None, *args, **kwargs):
@@ -223,13 +287,14 @@ class GithubReporterTest(unittest.TestCase):
         mock_args = MagicMock()
         mock_args.pr_url = 'https://github.com/foo/bar/pull/1234'
         mock_args.commit = 'abc123'
+        mock_args.delete_previous_comments = True
         mock_getenv.return_value = 'MY_TOKEN'
         mock_client_session.side_effect = session_init_side_effect
 
         return mock_args, fake_client_session
 
     def test_create_line_map(self):
-        reporter = GithubReporter('TOKEN', 'foo', 'bar', 12, 'abc123')
+        reporter = GithubReporter('TOKEN', 'foo', 'bar', 12, 'abc123', False)
         client_session = FakeClientSession(url_map={
             ('https://api.github.com/repos/foo/bar/pulls/12', 'get'):
                 FakeClientResponse(GithubReporterTest.github_patch)
@@ -248,13 +313,14 @@ class GithubReporterTest(unittest.TestCase):
         self.assertEqual(12, line_map['some_dir/some_file'][59])
 
     def test_messages_paging(self):
-        reporter = GithubReporter('TOKEN', 'foo', 'bar', 12, 'abc123')
+        reporter = GithubReporter('TOKEN', 'foo', 'bar', 12, 'abc123', False)
         client_session = FakeClientSession(url_map={
             ('https://api.github.com/repos/foo/bar/pulls/12/comments', 'get'):
                 FakeClientResponse(json.dumps([{
+                    'id': 1,
                     'path': 'file1',
                     'position': 2,
-                    'body': 'hello'
+                    'body': 'linter says: hello'
                 }], sort_keys=True),
                 headers={
                     'link': '<https://api.github.com/repos/foo/bar/'
@@ -263,16 +329,22 @@ class GithubReporterTest(unittest.TestCase):
             ('https://api.github.com/repos/foo/bar/pulls/12/comments?page=1',
              'get'):
                 FakeClientResponse(json.dumps([{
+                    'id': 2,
                     'path': 'file2',
                     'position': 3,
-                    'body': 'world'
+                    'body': 'linter says: world'
                 }], sort_keys=True))
         })
 
         loop = asyncio.get_event_loop()
         existing_messages = loop.run_until_complete(
-            reporter.get_existing_messages(client_session))
+            reporter.get_existing_pr_messages(client_session, 'linter'))
 
         self.assertEqual(2, len(existing_messages))
-        self.assertIn(('file1', 2, 'hello'), existing_messages)
-        self.assertIn(('file2', 3, 'world'), existing_messages)
+
+        self.assertIn(
+            ExistingGithubMessage(1, 'file1', 2, 'linter says: hello'),
+            existing_messages)
+        self.assertIn(
+            ExistingGithubMessage(2, 'file2', 3, 'linter says: world'),
+            existing_messages)
