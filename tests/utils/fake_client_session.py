@@ -66,6 +66,11 @@ class FakeClientSession(object):
         self.calls.append(call.post(url, *args, **updated_kwargs))
         return _RequestContextManager(self._get_stored_value(url, 'post'))
 
+    def delete(self, url, *args, **kwargs):
+        updated_kwargs = self._update_headers(kwargs)
+        self.calls.append(call.delete(url, *args, **updated_kwargs))
+        return _RequestContextManager(self._get_stored_value(url, 'delete'))
+
     def _update_headers(self, kwargs):
         result = copy.copy(kwargs)
         merged_headers = copy.copy(self.headers) if self.headers else {}
