@@ -1,5 +1,4 @@
 import itertools
-
 from collections import OrderedDict
 
 

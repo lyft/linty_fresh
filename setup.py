@@ -11,9 +11,9 @@ setup(
     name='linty-fresh',
     version=get_version(),
     license='apache',
-    description='''
+    description="""
         This package reports style violations for a Github PR as comments.
-    ''',
+    """,
     author='Roy Williams',
     author_email='rwilliams@lyft.com',
     url='https://github.com/lyft/linty-fresh',
