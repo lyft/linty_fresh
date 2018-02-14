@@ -100,10 +100,10 @@ class GithubReporter(object):
                     no_matching_line_number.append((location,
                                                     problems_for_line))
             if lint_errors > MAX_LINT_ERROR_REPORTS:
-                message = '''{0} says:
+                message = """{0} says:
 
 Too many lint errors to report inline!  {1} lines have a problem.
-Only reporting the first {2}.'''.format(
+Only reporting the first {2}.""".format(
                     linter_name, lint_errors, MAX_LINT_ERROR_REPORTS)
                 data = json.dumps({
                     'body': message
