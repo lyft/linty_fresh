@@ -4,7 +4,7 @@ import json
 import os
 import re
 from collections import defaultdict
-from typing import Any, Dict, List, MutableMapping, NamedTuple, Set,  TypeVar
+from typing import Any, Dict, List, MutableMapping, Optional, Set, TypeVar
 
 import aiohttp
 
@@ -22,10 +22,27 @@ LINK_REGEX = re.compile(r'<(?P<url>.+)>; rel="(?P<rel>\w+)"')
 NEW_FILE_SECTION_START = 'diff --git a'
 MAX_LINT_ERROR_REPORTS = 10
 
-ExistingGithubMessage = NamedTuple('ExistingGithubMessage',
-                                   [('path', str),
-                                    ('position', int),
-                                    ('body', str)])
+
+class ExistingGithubMessage(object):
+    def __init__(self,
+                 comment_id: Optional[int],
+                 path: str,
+                 position: int,
+                 body: str) -> None:
+        self.comment_id = comment_id
+        self.path = path
+        self.position = position
+        self.body = body
+
+    def __hash__(self):
+        return hash((self.path, self.position, self.body))
+
+    def __eq__(self, other):
+        if isinstance(self, other.__class__):
+            return (self.path == other.path and
+                    self.position == other.position and
+                    self.body == other.body)
+        return False
 
 GenericProblem = TypeVar('GenericProblem', Problem, TestProblem)
 
@@ -37,12 +54,14 @@ class GithubReporter(object):
                  organization: str,
                  repo: str,
                  pr_number: int,
-                 commit: str) -> None:
+                 commit: str,
+                 delete_previous_comments: bool) -> None:
         self.auth_token = auth_token
         self.organization = organization
         self.repo = repo
         self.pr = pr_number
         self.commit = commit
+        self.delete_previous_comments = delete_previous_comments
 
     async def report(self, linter_name: str,
                      problems: List[GenericProblem]) -> None:
@@ -55,9 +74,11 @@ class GithubReporter(object):
             'Authorization': 'token {}'.format(self.auth_token),
         }
         with aiohttp.ClientSession(headers=headers) as client_session:
-            (line_map, existing_messages) = await asyncio.gather(
+            (line_map, existing_messages, message_ids) = await asyncio.gather(
                 self.create_line_to_position_map(client_session),
-                self.get_existing_messages(client_session))
+                self.get_existing_pr_messages(client_session, linter_name),
+                self.get_existing_issue_message_ids(client_session,
+                                                    linter_name))
             lint_errors = 0
             review_comment_awaitable = []
             pr_url = self._get_pr_url()
@@ -85,7 +106,11 @@ class GithubReporter(object):
                             reported_problems_for_line.add(problem.message)
                     message_for_line.append('```')
                     message = '\n'.join(message_for_line)
-                    if (path, position, message) not in existing_messages:
+                    try:
+                        existing_messages.remove(
+                            ExistingGithubMessage(None, path, position,
+                                                  message))
+                    except KeyError:
                         lint_errors += 1
                         if lint_errors <= MAX_LINT_ERROR_REPORTS:
                             data = json.dumps({
@@ -99,6 +124,7 @@ class GithubReporter(object):
                 else:
                     no_matching_line_number.append((location,
                                                     problems_for_line))
+
             if lint_errors > MAX_LINT_ERROR_REPORTS:
                 message = """{0} says:
 
@@ -112,6 +138,18 @@ Only reporting the first {2}.""".format(
                     asyncio.ensure_future(client_session.post(
                         self._get_issue_url(),
                         data=data)))
+
+            if self.delete_previous_comments:
+                for message_id in message_ids:
+                    review_comment_awaitable.append(
+                        asyncio.ensure_future(client_session.delete(
+                            self._get_delete_issue_comment_url(message_id))))
+                for message in existing_messages:
+                    review_comment_awaitable.append(
+                        asyncio.ensure_future(client_session.delete(
+                            self._get_delete_pr_comment_url(
+                                message.comment_id))))
+
             if no_matching_line_number:
                 no_matching_line_messages = []
                 for location, problems_for_line in no_matching_line_number:
@@ -122,7 +160,7 @@ Only reporting the first {2}.""".format(
                     for problem in problems_for_line:
                         no_matching_line_messages.append('\t{0}'.format(
                             problem.message))
-                message = ('{0} found some problems with lines not '
+                message = ('{0} says: I found some problems with lines not '
                            'modified by this commit:\n```\n{1}\n```'.format(
                                linter_name,
                                '\n'.join(no_matching_line_messages)))
@@ -189,34 +227,70 @@ Only reporting the first {2}.""".format(
                     repo=self.repo,
                     pr=self.pr))
 
-    async def get_existing_messages(
-        self, client_session: aiohttp.ClientSession
+    def _get_delete_pr_comment_url(self, comment_id: int) -> str:
+        return ('https://api.github.com/repos/'
+                '{organization}/{repo}/pulls/comments/{comment_id}'.format(
+                    organization=self.organization,
+                    repo=self.repo,
+                    comment_id=comment_id))
+
+    def _get_delete_issue_comment_url(self, comment_id: int) -> str:
+        return ('https://api.github.com/repos/'
+                '{organization}/{repo}/issues/comments/{comment_id}'.format(
+                    organization=self.organization,
+                    repo=self.repo,
+                    comment_id=comment_id))
+
+    async def get_existing_issue_message_ids(
+        self, client_session: aiohttp.ClientSession, linter_name: str
+    ) -> Set[str]:
+        url = self._get_issue_url()
+        messages_json = await self._fetch_message_json_from_url(
+            client_session, url, linter_name)
+        message_ids = set()  # type: Set[str]
+        for blob in messages_json:
+            if self._is_linter_message(blob['body'], linter_name):
+                message_ids.add(blob['id'])
+
+        return message_ids
+
+    async def get_existing_pr_messages(
+        self, client_session: aiohttp.ClientSession, linter_name: str
     ) -> Set[ExistingGithubMessage]:
         url = self._get_pr_url()
-        return await self._fetch_messages_from_url(client_session, url)
+        existing_messages = set()  # type: Set[ExistingGithubMessage]
+        messages_json = await self._fetch_message_json_from_url(
+            client_session, url, linter_name)
+
+        for comment in messages_json:
+            body = comment['body']
+            if not self._is_linter_message(body, linter_name):
+                continue
+
+            existing_messages.add(
+                ExistingGithubMessage(comment['id'],
+                                      comment['path'],
+                                      comment['position'],
+                                      body))
+
+        return existing_messages
 
     @staticmethod
-    async def _fetch_messages_from_url(
-            client_session, url
-    ) -> Set[ExistingGithubMessage]:
-        existing_messages = set()  # type: Set[ExistingGithubMessage]
+    async def _fetch_message_json_from_url(
+            client_session, url, linter_name
+    ) -> [Any]:
+        messages_json = []
         async with client_session.get(url) as response:
             response = response  # type: aiohttp.ClientResponse
-            comments = json.loads(await response.text())
-            for comment in comments:
-                existing_messages.add(
-                    ExistingGithubMessage(path=comment['path'],
-                                          position=comment['position'],
-                                          body=comment['body']))
-
+            messages = json.loads(await response.text())
+            messages_json += messages
             next_url = GithubReporter._find_next_url(response)
 
         if next_url:
-            existing_messages = existing_messages.union(
-                await GithubReporter._fetch_messages_from_url(
-                    client_session, next_url))
+            messages_json += await GithubReporter._fetch_message_json_from_url(
+                client_session, next_url, linter_name)
 
-        return existing_messages
+        return messages_json
 
     @staticmethod
     def _find_next_url(response: aiohttp.ClientResponse) -> str:
@@ -226,6 +300,10 @@ Only reporting the first {2}.""".format(
                 match = LINK_REGEX.match(link)
                 if match and match.group('rel') == 'next':
                     return match.group('url')
+
+    @staticmethod
+    def _is_linter_message(text: str, linter_name: str) -> bool:
+        return text.startswith('{} says:'.format(linter_name))
 
 
 def register_arguments(parser: argparse.ArgumentParser) -> None:
@@ -252,7 +330,8 @@ def create_reporter(args: Any) -> GithubReporter:
                               groups['organization'],
                               groups['repo'],
                               int(groups['pr_number']),
-                              args.commit)
+                              args.commit,
+                              args.delete_previous_comments)
     else:
         raise Exception("{} doesn't appear to be a valid github pr url".format(
             args.pr_url

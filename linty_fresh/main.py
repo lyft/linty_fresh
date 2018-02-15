@@ -40,6 +40,9 @@ def create_parser() -> argparse.ArgumentParser:
                         help='The lint file being parsed.')
     parser.add_argument('--pass-warnings', default=False, action='store_true',
                         help='(ANDROID ONLY) Pass Android linter on warnings.')
+    parser.add_argument('--delete_previous_comments', default=False,
+                        action='store_true',
+                        help='Delete stale linter comments.')
 
     for name, reporter in REPORTERS.items():
         reporter.register_arguments(parser)
