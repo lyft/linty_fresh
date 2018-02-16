@@ -65,7 +65,9 @@ class GithubReporter(object):
 
     async def report(self, linter_name: str,
                      problems: List[GenericProblem]) -> None:
-        if isinstance(list(problems)[0], TestProblem):
+        if not problems:
+            grouped_problems = {}
+        elif isinstance(list(problems)[0], TestProblem):
             grouped_problems = TestProblem.group_by_group(problems)
         else:
             grouped_problems = Problem.group_by_path_and_line(problems)
