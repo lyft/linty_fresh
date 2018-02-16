@@ -7,7 +7,8 @@ from mock import MagicMock, call, patch
 
 from linty_fresh.reporters import github_reporter
 from linty_fresh.reporters.github_reporter import (GithubReporter,
-                                                   ExistingGithubMessage)
+                                                   ExistingGithubMessage,
+                                                   HadLintErrorsException)
 from linty_fresh.problem import Problem
 from ..utils.fake_client_session import FakeClientResponse, FakeClientSession
 
@@ -60,6 +61,7 @@ class GithubReporterTest(unittest.TestCase):
             mock_client_session)
 
         reporter = github_reporter.create_reporter(mock_args)
+
         async_report = reporter.report('unit-test-linter', [
             Problem('some_dir/some_file', 40, 'this made me sad'),
             Problem('some_dir/some_file', 40, 'really sad'),
@@ -71,7 +73,11 @@ class GithubReporterTest(unittest.TestCase):
         ])
 
         loop = asyncio.get_event_loop()
-        loop.run_until_complete(async_report)
+
+        try:
+            loop.run_until_complete(async_report)
+        except HadLintErrorsException:
+            pass
 
         diff_request = call.get(
             'https://api.github.com/repos/foo/bar/pulls/1234',
@@ -180,9 +186,12 @@ class GithubReporterTest(unittest.TestCase):
         problems = [Problem('another_file', x, 'Wat') for x in range(1, 13)]
 
         async_report = reporter.report('unit-test-linter', problems)
-
         loop = asyncio.get_event_loop()
-        loop.run_until_complete(async_report)
+
+        try:
+            loop.run_until_complete(async_report)
+        except HadLintErrorsException:
+            pass
 
         overflow_message = textwrap.dedent('''\
             unit-test-linter says:
@@ -225,9 +234,12 @@ class GithubReporterTest(unittest.TestCase):
         problems = [Problem('another_file', x, 'Wat') for x in range(1, 13)]
 
         async_report = reporter.report('unit-test-linter', problems)
-
         loop = asyncio.get_event_loop()
-        loop.run_until_complete(async_report)
+
+        try:
+            loop.run_until_complete(async_report)
+        except HadLintErrorsException:
+            pass
 
         overflow_message = textwrap.dedent('''\
             unit-test-linter says:

@@ -1,5 +1,6 @@
 import argparse
 import asyncio
+import sys
 from typing import Any, Dict  # noqa
 
 from linty_fresh.linters import (android, buck_unittest, checkstyle, mypy,
@@ -82,7 +83,10 @@ async def run_loop(args):
     awaitable_array.extend([reporter.report(linter_name, problems) for
                             reporter in
                             reporters])
-    await asyncio.gather(*awaitable_array)
+    try:
+        await asyncio.gather(*awaitable_array)
+    except github_reporter.HadLintErrorsException:
+        sys.exit(1)
 
 
 def main():

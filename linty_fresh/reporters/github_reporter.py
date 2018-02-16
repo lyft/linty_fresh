@@ -23,6 +23,10 @@ NEW_FILE_SECTION_START = 'diff --git a'
 MAX_LINT_ERROR_REPORTS = 10
 
 
+class HadLintErrorsException(Exception):
+    pass
+
+
 class ExistingGithubMessage(object):
     def __init__(self,
                  comment_id: Optional[int],
@@ -155,6 +159,7 @@ Only reporting the first {2}.""".format(
             if no_matching_line_number:
                 no_matching_line_messages = []
                 for location, problems_for_line in no_matching_line_number:
+                    lint_errors += 1
                     path = location[0]
                     line_number = location[1]
                     no_matching_line_messages.append(
@@ -178,6 +183,9 @@ Only reporting the first {2}.""".format(
             )  # type: List[aiohttp.ClientResponse]
             for response in responses:
                 response.close()
+
+            if lint_errors > 0:
+                raise HadLintErrorsException()
 
     async def create_line_to_position_map(
         self, client_session: aiohttp.ClientSession
