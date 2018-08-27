@@ -98,3 +98,6 @@ class FakeStreamReader(object):
             return self.lines[self.line_index - 1].encode()
         else:
             raise StopAsyncIteration
+
+    def readline(self):
+        return map(str.encode, self.lines)
