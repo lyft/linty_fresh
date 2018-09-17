@@ -54,3 +54,13 @@ class XcodebuildTest(unittest.TestCase):
                     'constraint attributes. This may produce unexpected '
                     'results at runtime before Xcode 5.1'),
             result)
+
+    def test_should_not_parse(self):
+        test_string = [
+            "Details:  log recorder was sent "
+            "-stopRecordingWithInfo:completionBlock: after it had already "
+            "been asked to stop recording.",
+        ]
+
+        result = xcodebuild.parse('\n'.join(test_string))
+        self.assertEqual(0, len(result))

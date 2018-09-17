@@ -4,10 +4,12 @@ from typing import Set
 
 from linty_fresh.problem import Problem
 
-XCODEBUILD_LINE_REGEX = re.compile(r'(?P<path>[^:]*):'
-                                   r'((?P<line>\d*)|(?P<reference>[^:]*)):'
-                                   r'(?:(?P<column>\d*):)?\s*(?P<level>\w*):'
-                                   r'\s*(?P<message>.*)')
+XCODEBUILD_LINE_REGEX = re.compile(
+    r'(?P<path>[^:]*):'
+    r'((?P<line>\d*)|(?P<reference>[^:]*)):'
+    r'(?:(?P<column>\d*):)?\s*(?P<level>(error|warning|note)):'
+    r'\s*(?P<message>.*)'
+)
 
 
 def parse(contents: str, **kwargs) -> Set[Problem]:
