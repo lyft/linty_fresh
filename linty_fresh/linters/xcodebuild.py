@@ -7,7 +7,7 @@ from linty_fresh.problem import Problem
 XCODEBUILD_LINE_REGEX = re.compile(
     r'(?P<path>[^:]*):'
     r'((?P<line>\d*)|(?P<reference>[^:]*)):'
-    r'(?:(?P<column>\d*):)?\s*(?P<level>(error|warning|note)):'
+    r'(?:(?P<column>\d*):)?\s*(?P<level>((?i)error|warn(ing)?|note|info)):'
     r'\s*(?P<message>.*)'
 )
 
