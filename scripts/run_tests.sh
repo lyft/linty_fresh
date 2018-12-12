@@ -17,7 +17,7 @@ COMMIT="$(git rev-parse HEAD)"
 set +e
 set -o pipefail
 
-python setup.py flake8 |& tee flake8.txt
+python setup.py flake8 | tee flake8.txt
 LINT_RESULT=$?
 
 if [ -n "${TRAVIS_PULL_REQUEST}" ] && \
