@@ -88,16 +88,16 @@ class FakeStreamReader(object):
         self.lines = content.splitlines()
         self.line_index = 0
 
-    async def __aiter__(self):
+    def __aiter__(self):
         self.line_index = 0
         return self
 
     async def __anext__(self):
         if self.line_index < len(self.lines):
             self.line_index += 1
-            return self.lines[self.line_index - 1].encode()
+            return (self.lines[self.line_index - 1] + "\n").encode()
         else:
             raise StopAsyncIteration
 
-    def readline(self):
-        return map(str.encode, self.lines)
+    def iter_any(self):
+        return self

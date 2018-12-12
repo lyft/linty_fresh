@@ -204,7 +204,13 @@ Only reporting the first {2}.""".format(
                    repo=self.repo,
                    pr=self.pr))
         async with client_session.get(url, headers=headers) as response:
-            for line in response.content.readline():
+            # Collect the entire response before reading it. If you iterate
+            # over lines instead, very long lines cause exceptions
+            content = b''
+            async for chunk in response.content.iter_any():
+                content += chunk
+
+            for line in content.splitlines():
                 line = line.decode()
                 file_match = FILE_START_REGEX.match(line)
                 if file_match:
