@@ -206,7 +206,7 @@ Only reporting the first {2}.""".format(
         async with client_session.get(url, headers=headers) as response:
             # Collect the entire response before reading it. If you iterate
             # over lines instead, very long lines cause exceptions
-            content = b""
+            content = b''
             async for chunk in response.content.iter_any():
                 content += chunk
 
