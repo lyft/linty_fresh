@@ -27,7 +27,7 @@ class XcodebuildTest(unittest.TestCase):
         ]
 
         result = xcodebuild.parse('\n'.join(test_string))
-        self.assertEqual(5, len(result))
+        self.assertEqual(4, len(result))
 
         self.assertIn(
             Problem('<unknown>',
@@ -46,13 +46,6 @@ class XcodebuildTest(unittest.TestCase):
                     'qux.swift',
                     201,
                     "use of unresolved identifier 'FooBar'"),
-            result)
-
-        self.assertIn(
-            Problem('Classes/foo/bar/Protocols/'
-                    'SomeProtocol.swift',
-                    7,
-                    "did you mean 'SomeOtherProtocol'?"),
             result)
 
         self.assertIn(
