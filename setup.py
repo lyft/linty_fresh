@@ -29,7 +29,7 @@ setup(
     ],
     install_requires=[
         'aiohttp>=0.19.0, <3.0.0',
-        'typing>=3.5.0.1, <4.0.0',
+        'typing>=3.5.0.1, <4.0.0;python_version<"3.7"',
     ],
     classifiers=[
         'Environment :: Console',
