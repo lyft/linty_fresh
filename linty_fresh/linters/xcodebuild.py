@@ -12,6 +12,8 @@ XCODEBUILD_LINE_REGEX = re.compile(
     re.IGNORECASE,
 )
 
+CLASS_NAME = re.compile(r'[A-Z]\w+\.[A-Z]\w+$')
+
 
 def parse(contents: str, **kwargs) -> Set[Problem]:
     result = set()  # type: Set[Problem]
@@ -19,12 +21,17 @@ def parse(contents: str, **kwargs) -> Set[Problem]:
         match = XCODEBUILD_LINE_REGEX.match(line)
         if match:
             groups = match.groupdict()
+            path = groups['path']
             line = groups['line'] or 0
+            level = groups['level']
             message = groups['message']
             reference = groups['reference']
             if reference:
                 message = '{}: {}'.format(reference, message)
 
-            result.add(Problem(os.path.relpath(groups['path']),
-                               line, message))
+            if CLASS_NAME.match(path) and level == 'note':
+                # Ignore non-file references (ex UIKit.UIScrollViewDelegate)
+                continue
+
+            result.add(Problem(os.path.relpath(path), line, message))
     return result

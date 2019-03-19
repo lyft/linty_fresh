@@ -22,6 +22,8 @@ class XcodebuildTest(unittest.TestCase):
             "warning: Unsupported configuration of constraint attributes. "
             "This may produce unexpected results at runtime before Xcode 5.1"
             .format(os.path.curdir),
+            "UIKit.UIScrollViewDelegate:23:41: "
+            "note: requirement 'viewForZooming(in:)' declared here"
         ]
 
         result = xcodebuild.parse('\n'.join(test_string))
