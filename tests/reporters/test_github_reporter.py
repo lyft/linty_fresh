@@ -86,12 +86,12 @@ class GithubReporterTest(unittest.TestCase):
                 'Authorization': 'token MY_TOKEN'
             })
         existing_comments_request = call.get(
-            'https://api.github.com/repos/foo/bar/pulls/1234/comments',
+            'https://api.github.com/repos/foo/bar/pulls/1234/comments?per_page=100',
             headers={
                 'Authorization': 'token MY_TOKEN'
             })
         existing_issues_request = call.get(
-            'https://api.github.com/repos/foo/bar/issues/1234/comments',
+            'https://api.github.com/repos/foo/bar/issues/1234/comments?per_page=100',
             headers={
                 'Authorization': 'token MY_TOKEN'
             })
@@ -271,7 +271,7 @@ class GithubReporterTest(unittest.TestCase):
         fake_client_session = FakeClientSession(url_map={
             ('https://api.github.com/repos/foo/bar/pulls/1234', 'get'):
                 FakeClientResponse(GithubReporterTest.github_patch),
-            ('https://api.github.com/repos/foo/bar/pulls/1234/comments',
+            ('https://api.github.com/repos/foo/bar/pulls/1234/comments?per_page=100',
              'get'): FakeClientResponse(json.dumps([{
                  'id': 1,
                  'path': 'another_file',
@@ -286,7 +286,7 @@ class GithubReporterTest(unittest.TestCase):
              'post'): FakeClientResponse(''),
             ('https://api.github.com/repos/foo/bar/issues/1234/comments',
              'post'): FakeClientResponse(''),
-            ('https://api.github.com/repos/foo/bar/issues/1234/comments',
+            ('https://api.github.com/repos/foo/bar/issues/1234/comments?per_page=100',
              'get'): FakeClientResponse('[]'),
             ('https://api.github.com/repos/foo/bar/pulls/comments/1',
              'delete'): FakeClientResponse('')
@@ -327,7 +327,7 @@ class GithubReporterTest(unittest.TestCase):
     def test_messages_paging(self):
         reporter = GithubReporter('TOKEN', 'foo', 'bar', 12, 'abc123', False)
         client_session = FakeClientSession(url_map={
-            ('https://api.github.com/repos/foo/bar/pulls/12/comments', 'get'):
+            ('https://api.github.com/repos/foo/bar/pulls/12/comments?per_page=100', 'get'):
                 FakeClientResponse(json.dumps([{
                     'id': 1,
                     'path': 'file1',
@@ -338,7 +338,7 @@ class GithubReporterTest(unittest.TestCase):
                     'link': '<https://api.github.com/repos/foo/bar/'
                             'pulls/12/comments?page=1>; rel="next"'
                 }),
-            ('https://api.github.com/repos/foo/bar/pulls/12/comments?page=1',
+            ('https://api.github.com/repos/foo/bar/pulls/12/comments?page=1&per_page=100',
              'get'):
                 FakeClientResponse(json.dumps([{
                     'id': 2,
