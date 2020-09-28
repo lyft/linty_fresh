@@ -5,6 +5,7 @@ import os
 import re
 from collections import defaultdict
 from typing import Any, Dict, List, MutableMapping, Optional, Set, TypeVar
+from urllib.parse import parse_qs, urlencode, urlparse
 
 import aiohttp
 
@@ -295,6 +296,14 @@ Only reporting the first {2}.""".format(
     async def _fetch_message_json_from_url(
             client_session, url, linter_name
     ) -> [Any]:
+        def update_url(orig_url: str, additional_query: Dict[str, Any]) -> str:
+            parsed_url = urlparse(orig_url)
+            original_params = parse_qs(parsed_url.query)
+            updated_query = urlencode(
+                {**original_params,
+                 **additional_query}, doseq=True)
+            return parsed_url._replace(query=updated_query).geturl()
+        url = update_url(url, {'per_page': 100})
         messages_json = []
         async with client_session.get(url) as response:
             response = response  # type: aiohttp.ClientResponse
