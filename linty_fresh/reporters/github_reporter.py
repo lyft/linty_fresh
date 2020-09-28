@@ -230,6 +230,7 @@ Only reporting the first {2}.""".format(
         return result
 
     def _get_pr_url(self) -> str:
+        # a comment for the sake of a comment
         return ('https://api.github.com/repos/'
                 '{organization}/{repo}/pulls/{pr}/comments'.format(
                     organization=self.organization,
