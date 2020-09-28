@@ -7,7 +7,7 @@ from collections import defaultdict
 from typing import Any, Dict, List, MutableMapping, Optional, Set, TypeVar
 from urllib.parse import parse_qs, urlencode, urlparse
 
-import aiohttp  # noqa
+import aiohttp
 
 from linty_fresh.problem import Problem, TestProblem
 
