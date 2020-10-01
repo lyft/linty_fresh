@@ -25,6 +25,7 @@ setup(
         'flake8-debugger>=1.4.0',
         'flake8-import-order>=0.10',
         'flake8-quotes>=0.8.1',
+        'mock>=1.0.1',
         'pycodestyle>=2.0.0, <2.1.0',
     ],
     install_requires=[
