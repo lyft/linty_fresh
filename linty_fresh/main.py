@@ -67,7 +67,7 @@ async def run_loop(args):
         ))
     linter = LINTERS[args.linter]
     for lint_file_path in args.files:
-        with open(lint_file_path, 'r') as lint_file:
+        with open(lint_file_path) as lint_file:
             problems.update(linter.parse(
                 lint_file.read(), **vars(args)))
     storage_engine = GitNotesStorageEngine('origin')

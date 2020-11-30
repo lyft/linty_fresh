@@ -1,4 +1,3 @@
-
 from typing import Set
 from xml.etree import ElementTree
 

@@ -17,7 +17,7 @@ GIT_SUBPROCESS_KWARGS = {
 }
 
 
-class GitNotesStorageEngine(object):
+class GitNotesStorageEngine:
     def __init__(self, remote: str = None):
         self.remote = remote
 
@@ -43,7 +43,7 @@ class GitNotesStorageEngine(object):
             await fetch_notes.wait()
 
         last_n_revisions_proc = await asyncio.create_subprocess_exec(
-            'git', 'log', '--skip=1', '-{}'.format(MAX_REVISIONS),
+            'git', 'log', '--skip=1', f'-{MAX_REVISIONS}',
             '--pretty=%H',
             **GIT_SUBPROCESS_KWARGS)
 
