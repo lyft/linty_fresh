@@ -79,7 +79,7 @@ class GithubReporter(object):
         headers = {
             'Authorization': 'token {}'.format(self.auth_token),
         }
-        with aiohttp.ClientSession(headers=headers) as client_session:
+        async with aiohttp.ClientSession(headers=headers) as client_session:
             (line_map, existing_messages, message_ids) = await asyncio.gather(
                 self.create_line_to_position_map(client_session),
                 self.get_existing_pr_messages(client_session, linter_name),
