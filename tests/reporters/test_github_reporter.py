@@ -3,7 +3,7 @@ import json
 import textwrap
 import unittest
 
-from mock import MagicMock, call, patch
+from unittest.mock import MagicMock, call, patch
 
 from linty_fresh.reporters import github_reporter
 from linty_fresh.reporters.github_reporter import (GithubReporter,
