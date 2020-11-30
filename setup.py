@@ -1,15 +1,9 @@
 from setuptools import find_packages, setup
 
 
-def get_version(file_name='linty_fresh/__init__.py'):
-    with open(file_name) as f:
-        for line in f.read().splitlines():
-            if line.startswith('__version__'):
-                return line.split('=')[-1].strip(" '")
-
 setup(
     name='linty-fresh',
-    version=get_version(),
+    version='0.7.0',
     license='apache',
     description="""
         This package reports style violations for a Github PR as comments.
