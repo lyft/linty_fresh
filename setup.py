@@ -29,7 +29,7 @@ setup(
         'pycodestyle>=2.0.0, <2.1.0',
     ],
     install_requires=[
-        'aiohttp>=3.6.2, <4.0.0',
+        'aiohttp>=0.19.0, <3.0.0',
         'typing>=3.5.0.1, <4.0.0;python_version<"3.7"',
     ],
     classifiers=[
