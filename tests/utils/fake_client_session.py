@@ -2,7 +2,7 @@ import copy
 from typing import Dict, Tuple
 
 from aiohttp.client import _RequestContextManager
-from mock import call
+from unittest.mock import call
 
 
 class FakeClientResponse(object):

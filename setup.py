@@ -25,7 +25,6 @@ setup(
         'flake8-debugger>=1.4.0, <4.0.0',
         'flake8-import-order>=0.10, <0.19',
         'flake8-quotes>=0.8.1, <3.2.0',
-        'mock>=1.0.1, <4.0.2',
         'pycodestyle>=2.0.0, <2.1.0',
     ],
     install_requires=[
@@ -43,9 +42,4 @@ setup(
     entry_points={
         'console_scripts': ['linty_fresh = linty_fresh.main:main'],
     },
-    tests_require=[
-        'nose>=1.3.3',
-        'mock>=1.0.1',
-    ],
-    test_suite='nose.collector',
 )
