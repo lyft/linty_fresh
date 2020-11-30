@@ -1,5 +1,6 @@
-import unittest
 import os
+import unittest
+
 from linty_fresh.linters import swiftlint
 from linty_fresh.problem import Problem
 

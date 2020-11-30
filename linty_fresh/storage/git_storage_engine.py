@@ -5,7 +5,6 @@ from typing import Set
 
 from linty_fresh.problem import Problem
 
-
 MAX_REVISIONS = 10
 NOTES_REF = 'refs/notes/linty_fresh'
 GIT_SUBPROCESS_KWARGS = {

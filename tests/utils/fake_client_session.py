@@ -1,8 +1,8 @@
 import copy
 from typing import Dict, Tuple
+from unittest.mock import call
 
 from aiohttp.client import _RequestContextManager
-from unittest.mock import call
 
 
 class FakeClientResponse:

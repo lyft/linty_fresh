@@ -4,7 +4,6 @@ from typing import Set
 
 from linty_fresh.problem import Problem
 
-
 SWIFTLINT_LINE_REGEX = re.compile(r'(?P<path>[^:]*):(?P<line>\d*):'
                                   r'(?:(?P<column>\d*):)?\s*(?P<level>\w*):'
                                   r'\s*(?P<message>.*)')

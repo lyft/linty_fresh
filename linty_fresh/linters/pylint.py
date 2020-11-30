@@ -3,7 +3,6 @@ from typing import Set
 
 from linty_fresh.problem import Problem
 
-
 PYLINT_LINE_REGEX = re.compile(r'(?P<path>[^:]+):(?P<line>\d+):\s*'
                                r'(?:(?P<column>\d*):)?\s*'
                                r'(?P<message>.*)')

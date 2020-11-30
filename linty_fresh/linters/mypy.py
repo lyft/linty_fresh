@@ -3,7 +3,6 @@ from typing import Set
 
 from linty_fresh.problem import Problem
 
-
 MYPY_LINE_REGEX = re.compile(r'(?P<path>[^:]*):(?P<line>\d*):\s*'
                              r'(?P<code>\w*)\s*:\s*(?P<message>.*)')
 
