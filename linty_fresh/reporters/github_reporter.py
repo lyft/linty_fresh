@@ -98,7 +98,7 @@ class GithubReporter:
             if position is None and path in line_map:
                 file_map = line_map[path]
                 closest_line = min(file_map.keys(),
-                                    key=lambda x: abs(x - line_number))
+                                   key=lambda x: abs(x - line_number))
                 position = file_map[closest_line]
                 message_for_line.append('(From line {})'.format(
                     line_number))
@@ -113,7 +113,7 @@ class GithubReporter:
                 try:
                     existing_messages.remove(
                         ExistingGithubMessage(None, path, position,
-                                                message))
+                                              message))
                 except KeyError:
                     lint_errors += 1
                     if lint_errors <= MAX_LINT_ERROR_REPORTS:
@@ -166,9 +166,9 @@ Only reporting the first {}.""".format(
                     no_matching_line_messages.append('\t{}'.format(
                         problem.message))
             message = ('{} says: I found some problems with lines not '
-                        'modified by this commit:\n```\n{}\n```'.format(
-                            linter_name,
-                            '\n'.join(no_matching_line_messages)))
+                       'modified by this commit:\n```\n{}\n```'.format(
+                           linter_name,
+                           '\n'.join(no_matching_line_messages)))
             data = json.dumps({
                 'body': message
             })
