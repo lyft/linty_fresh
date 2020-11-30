@@ -12,8 +12,7 @@ class Problem(object):
         return hash((self.path, self.line, self.message))
 
     def __eq__(self, other):
-        return ((self.path, self.line, self.message) ==
-                (other.path, other.line, other.message))
+        return ((self.path, self.line, self.message) == (other.path, other.line, other.message))
 
     def to_json(self):
         return OrderedDict({
@@ -54,11 +53,10 @@ class TestProblem(object):
         return ((self.test_group,
                  self.test_name,
                  self.message,
-                 self.stack_trace) ==
-                (other.test_group,
-                 other.test_name,
-                 other.message,
-                 other.stack_trace))
+                 self.stack_trace) == (other.test_group,
+                                       other.test_name,
+                                       other.message,
+                                       other.stack_trace))
 
     def to_json(self):
         return OrderedDict({

@@ -18,7 +18,7 @@ GIT_SUBPROCESS_KWARGS = {
 
 
 class GitNotesStorageEngine(object):
-    def __init__(self, remote: str=None):
+    def __init__(self, remote: str = None):
         self.remote = remote
 
     async def get_note_ref(self, last_n_revisions) -> None:

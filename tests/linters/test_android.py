@@ -56,10 +56,10 @@ class AndroidLintTest(unittest.TestCase):
         result = android.parse(test_string, pass_warnings=False)
         self.assertEqual(2, len(result))
         self.assertIn(Problem('scripts/run_tests.sh',
-                                      15,
-                                      'ScrollView size validation: This LinearLayout '
-                                      'should use '
-                                      '`android:layout_height="wrap_content"`'),
+                              15,
+                              'ScrollView size validation: This LinearLayout '
+                              'should use '
+                              '`android:layout_height="wrap_content"`'),
                       result)
 
         self.assertIn(Problem('scripts/setup.sh',
@@ -74,8 +74,8 @@ class AndroidLintTest(unittest.TestCase):
         result = android.parse(test_string, pass_warnings=True)
         self.assertEqual(1, len(result))
         self.assertIn(Problem('scripts/run_tests.sh',
-                                      15,
-                                      'ScrollView size validation: This LinearLayout '
-                                      'should use '
-                                      '`android:layout_height="wrap_content"`'),
+                              15,
+                              'ScrollView size validation: This LinearLayout '
+                              'should use '
+                              '`android:layout_height="wrap_content"`'),
                       result)
