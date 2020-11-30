@@ -77,113 +77,113 @@ class GithubReporter:
         headers = {
             'Authorization': f'token {self.auth_token}',
         }
-        with aiohttp.ClientSession(headers=headers) as client_session:
-            (line_map, existing_messages, message_ids) = await asyncio.gather(
-                self.create_line_to_position_map(client_session),
-                self.get_existing_pr_messages(client_session, linter_name),
-                self.get_existing_issue_message_ids(client_session,
-                                                    linter_name))
-            lint_errors = 0
-            review_comment_awaitable = []
-            pr_url = self._get_pr_url()
-            no_matching_line_number = []
-            for location, problems_for_line in grouped_problems:
-                message_for_line = [f'{linter_name} says:', '']
+        client_session = aiohttp.ClientSession(headers=headers)
+        (line_map, existing_messages, message_ids) = await asyncio.gather(
+            self.create_line_to_position_map(client_session),
+            self.get_existing_pr_messages(client_session, linter_name),
+            self.get_existing_issue_message_ids(client_session,
+                                                linter_name))
+        lint_errors = 0
+        review_comment_awaitable = []
+        pr_url = self._get_pr_url()
+        no_matching_line_number = []
+        for location, problems_for_line in grouped_problems:
+            message_for_line = [f'{linter_name} says:', '']
 
-                reported_problems_for_line = set()
+            reported_problems_for_line = set()
 
-                path = location[0]
-                line_number = location[1]
-                position = line_map.get(path, {}).get(line_number, None)
-                if position is None and path in line_map:
-                    file_map = line_map[path]
-                    closest_line = min(file_map.keys(),
-                                       key=lambda x: abs(x - line_number))
-                    position = file_map[closest_line]
-                    message_for_line.append('(From line {})'.format(
-                        line_number))
+            path = location[0]
+            line_number = location[1]
+            position = line_map.get(path, {}).get(line_number, None)
+            if position is None and path in line_map:
+                file_map = line_map[path]
+                closest_line = min(file_map.keys(),
+                                    key=lambda x: abs(x - line_number))
+                position = file_map[closest_line]
+                message_for_line.append('(From line {})'.format(
+                    line_number))
+            message_for_line.append('```')
+            if position is not None:
+                for problem in problems_for_line:
+                    if problem.message not in reported_problems_for_line:
+                        message_for_line.append(problem.message)
+                        reported_problems_for_line.add(problem.message)
                 message_for_line.append('```')
-                if position is not None:
-                    for problem in problems_for_line:
-                        if problem.message not in reported_problems_for_line:
-                            message_for_line.append(problem.message)
-                            reported_problems_for_line.add(problem.message)
-                    message_for_line.append('```')
-                    message = '\n'.join(message_for_line)
-                    try:
-                        existing_messages.remove(
-                            ExistingGithubMessage(None, path, position,
-                                                  message))
-                    except KeyError:
-                        lint_errors += 1
-                        if lint_errors <= MAX_LINT_ERROR_REPORTS:
-                            data = json.dumps({
-                                'body': message,
-                                'commit_id': self.commit,
-                                'path': path,
-                                'position': position,
-                            }, sort_keys=True)
-                            review_comment_awaitable.append(
-                                client_session.post(pr_url, data=data))
-                else:
-                    no_matching_line_number.append((location,
-                                                    problems_for_line))
+                message = '\n'.join(message_for_line)
+                try:
+                    existing_messages.remove(
+                        ExistingGithubMessage(None, path, position,
+                                                message))
+                except KeyError:
+                    lint_errors += 1
+                    if lint_errors <= MAX_LINT_ERROR_REPORTS:
+                        data = json.dumps({
+                            'body': message,
+                            'commit_id': self.commit,
+                            'path': path,
+                            'position': position,
+                        }, sort_keys=True)
+                        review_comment_awaitable.append(
+                            client_session.post(pr_url, data=data))
+            else:
+                no_matching_line_number.append((location,
+                                                problems_for_line))
 
-            if lint_errors > MAX_LINT_ERROR_REPORTS:
-                message = """{} says:
+        if lint_errors > MAX_LINT_ERROR_REPORTS:
+            message = """{} says:
 
 Too many lint errors to report inline!  {} lines have a problem.
 Only reporting the first {}.""".format(
-                    linter_name, lint_errors, MAX_LINT_ERROR_REPORTS)
-                data = json.dumps({
-                    'body': message
-                })
+                linter_name, lint_errors, MAX_LINT_ERROR_REPORTS)
+            data = json.dumps({
+                'body': message
+            })
+            review_comment_awaitable.append(
+                asyncio.ensure_future(client_session.post(
+                    self._get_issue_url(),
+                    data=data)))
+
+        if self.delete_previous_comments:
+            for message_id in message_ids:
                 review_comment_awaitable.append(
-                    asyncio.ensure_future(client_session.post(
-                        self._get_issue_url(),
-                        data=data)))
-
-            if self.delete_previous_comments:
-                for message_id in message_ids:
-                    review_comment_awaitable.append(
-                        asyncio.ensure_future(client_session.delete(
-                            self._get_delete_issue_comment_url(message_id))))
-                for message in existing_messages:
-                    review_comment_awaitable.append(
-                        asyncio.ensure_future(client_session.delete(
-                            self._get_delete_pr_comment_url(
-                                message.comment_id))))
-
-            if no_matching_line_number:
-                no_matching_line_messages = []
-                for location, problems_for_line in no_matching_line_number:
-                    lint_errors += 1
-                    path = location[0]
-                    line_number = location[1]
-                    no_matching_line_messages.append(
-                        f'{path}:{line_number}:')
-                    for problem in problems_for_line:
-                        no_matching_line_messages.append('\t{}'.format(
-                            problem.message))
-                message = ('{} says: I found some problems with lines not '
-                           'modified by this commit:\n```\n{}\n```'.format(
-                               linter_name,
-                               '\n'.join(no_matching_line_messages)))
-                data = json.dumps({
-                    'body': message
-                })
+                    asyncio.ensure_future(client_session.delete(
+                        self._get_delete_issue_comment_url(message_id))))
+            for message in existing_messages:
                 review_comment_awaitable.append(
-                    asyncio.ensure_future(client_session.post(
-                        self._get_issue_url(), data=data)))
+                    asyncio.ensure_future(client_session.delete(
+                        self._get_delete_pr_comment_url(
+                            message.comment_id))))
 
-            responses = await asyncio.gather(
-                *review_comment_awaitable
-            )  # type: List[aiohttp.ClientResponse]
-            for response in responses:
-                response.close()
+        if no_matching_line_number:
+            no_matching_line_messages = []
+            for location, problems_for_line in no_matching_line_number:
+                lint_errors += 1
+                path = location[0]
+                line_number = location[1]
+                no_matching_line_messages.append(
+                    f'{path}:{line_number}:')
+                for problem in problems_for_line:
+                    no_matching_line_messages.append('\t{}'.format(
+                        problem.message))
+            message = ('{} says: I found some problems with lines not '
+                        'modified by this commit:\n```\n{}\n```'.format(
+                            linter_name,
+                            '\n'.join(no_matching_line_messages)))
+            data = json.dumps({
+                'body': message
+            })
+            review_comment_awaitable.append(
+                asyncio.ensure_future(client_session.post(
+                    self._get_issue_url(), data=data)))
 
-            if lint_errors > 0:
-                raise HadLintErrorsException()
+        responses = await asyncio.gather(
+            *review_comment_awaitable
+        )  # type: List[aiohttp.ClientResponse]
+        for response in responses:
+            response.close()
+
+        if lint_errors > 0:
+            raise HadLintErrorsException()
 
     async def create_line_to_position_map(
         self, client_session: aiohttp.ClientSession
