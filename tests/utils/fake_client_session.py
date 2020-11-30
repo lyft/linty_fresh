@@ -9,6 +9,7 @@ class FakeClientResponse(object):
     def __init__(self, content, headers=None):
         self.headers = headers or {}
         self.content = FakeStreamReader(content)
+
     async def text(self):
         return self.content.content
 
@@ -32,8 +33,8 @@ class FakeClientResponse(object):
 
 class FakeClientSession(object):
     def __init__(self,
-                 headers: Dict[str, str]=None,
-                 url_map: Dict[Tuple[str, str], FakeClientResponse]=None,
+                 headers: Dict[str, str] = None,
+                 url_map: Dict[Tuple[str, str], FakeClientResponse] = None,
                  *args, **kwargs):
         self.headers = headers
         self.url_map = url_map

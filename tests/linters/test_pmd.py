@@ -3,12 +3,13 @@ import os
 from linty_fresh.linters import pmd
 from linty_fresh.problem import Problem
 
+
 class PmdTest(unittest.TestCase):
     def test_empty_parse(self):
         self.assertEqual(set(), pmd.parse(''))
 
     def test_parse_errors(self):
-            test_string = """\
+        test_string = """\
 <?xml version="1.0" encoding="UTF-8"?>
 <pmd version="5.5.0" timestamp="2016-07-06T11:29:03.360">
     <file name="{0}/DriverRideDrivingToWaypointController.java">
@@ -22,18 +23,18 @@ class PmdTest(unittest.TestCase):
         </violation>
     </file>
 </pmd>
-    """.format(os.path.curdir)
+        """.format(os.path.curdir)
 
-            result = pmd.parse(test_string)
-            self.assertEqual(2, len(result))
-            self.assertIn(Problem('./DriverRideDrivingToWaypointController.java',
-                                  287,
-                                  'UnusedFormalParameter: Avoid unused method' 
-                                  " parameters such as 'ride'."),
-                          result)
+        result = pmd.parse(test_string)
+        self.assertEqual(2, len(result))
+        self.assertIn(Problem('./DriverRideDrivingToWaypointController.java',
+                              287,
+                              'UnusedFormalParameter: Avoid unused method'
+                              " parameters such as 'ride'."),
+                      result)
 
-            self.assertIn(Problem('./AddCouponView.java',
-                                  24,
-                                  'UnusedImports: Avoid unused imports such as'
-                                  " 'me.lyft.android.common.Strings'"),
-                          result)
+        self.assertIn(Problem('./AddCouponView.java',
+                              24,
+                              'UnusedImports: Avoid unused imports such as'
+                              " 'me.lyft.android.common.Strings'"),
+                      result)

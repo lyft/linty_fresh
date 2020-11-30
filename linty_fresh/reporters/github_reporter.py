@@ -43,10 +43,9 @@ class ExistingGithubMessage(object):
 
     def __eq__(self, other):
         if isinstance(self, other.__class__):
-            return (self.path == other.path and
-                    self.position == other.position and
-                    self.body == other.body)
+            return (self.path == other.path and self.position == other.position and self.body == other.body)
         return False
+
 
 GenericProblem = TypeVar('GenericProblem', Problem, TestProblem)
 
@@ -100,7 +99,7 @@ class GithubReporter(object):
                 if position is None and path in line_map:
                     file_map = line_map[path]
                     closest_line = min(file_map.keys(),
-                                       key=lambda x: abs(x-line_number))
+                                       key=lambda x: abs(x - line_number))
                     position = file_map[closest_line]
                     message_for_line.append('(From line {})'.format(
                         line_number))
