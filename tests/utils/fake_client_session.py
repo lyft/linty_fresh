@@ -5,7 +5,7 @@ from aiohttp.client import _RequestContextManager
 from unittest.mock import call
 
 
-class FakeClientResponse(object):
+class FakeClientResponse:
     def __init__(self, content, headers=None):
         self.headers = headers or {}
         self.content = FakeStreamReader(content)
@@ -31,7 +31,7 @@ class FakeClientResponse(object):
         pass
 
 
-class FakeClientSession(object):
+class FakeClientSession:
     def __init__(self,
                  headers: Dict[str, str] = None,
                  url_map: Dict[Tuple[str, str], FakeClientResponse] = None,
@@ -83,7 +83,7 @@ class FakeClientSession(object):
         return result
 
 
-class FakeStreamReader(object):
+class FakeStreamReader:
     def __init__(self, content: str):
         self.content = content
         self.lines = content.splitlines()

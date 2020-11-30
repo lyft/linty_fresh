@@ -2,7 +2,7 @@ import itertools
 from collections import OrderedDict
 
 
-class Problem(object):
+class Problem:
     def __init__(self, file_path: str, line: str, message: str) -> None:
         self.path = file_path
         self.line = int(line)
@@ -37,7 +37,7 @@ class Problem(object):
                 itertools.groupby(sorted_problems, key_func)]
 
 
-class TestProblem(object):
+class TestProblem:
     def __init__(self, test_group: str, test_name: str, message: str,
                  stack_trace: str) -> None:
         self.test_group = test_group.strip()

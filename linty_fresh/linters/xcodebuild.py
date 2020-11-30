@@ -23,7 +23,7 @@ def parse(contents: str, **kwargs) -> Set[Problem]:
             message = groups['message']
             reference = groups['reference']
             if reference:
-                message = '{}: {}'.format(reference, message)
+                message = f'{reference}: {message}'
 
             result.add(Problem(os.path.relpath(groups['path']),
                                line, message))

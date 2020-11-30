@@ -27,7 +27,7 @@ class HadLintErrorsException(Exception):
     pass
 
 
-class ExistingGithubMessage(object):
+class ExistingGithubMessage:
     def __init__(self,
                  comment_id: Optional[int],
                  path: str,
@@ -50,7 +50,7 @@ class ExistingGithubMessage(object):
 GenericProblem = TypeVar('GenericProblem', Problem, TestProblem)
 
 
-class GithubReporter(object):
+class GithubReporter:
 
     def __init__(self,
                  auth_token: str,
@@ -76,7 +76,7 @@ class GithubReporter(object):
             grouped_problems = Problem.group_by_path_and_line(problems)
 
         headers = {
-            'Authorization': 'token {}'.format(self.auth_token),
+            'Authorization': f'token {self.auth_token}',
         }
         with aiohttp.ClientSession(headers=headers) as client_session:
             (line_map, existing_messages, message_ids) = await asyncio.gather(
@@ -89,7 +89,7 @@ class GithubReporter(object):
             pr_url = self._get_pr_url()
             no_matching_line_number = []
             for location, problems_for_line in grouped_problems:
-                message_for_line = ['{0} says:'.format(linter_name), '']
+                message_for_line = [f'{linter_name} says:', '']
 
                 reported_problems_for_line = set()
 
@@ -131,10 +131,10 @@ class GithubReporter(object):
                                                     problems_for_line))
 
             if lint_errors > MAX_LINT_ERROR_REPORTS:
-                message = """{0} says:
+                message = """{} says:
 
-Too many lint errors to report inline!  {1} lines have a problem.
-Only reporting the first {2}.""".format(
+Too many lint errors to report inline!  {} lines have a problem.
+Only reporting the first {}.""".format(
                     linter_name, lint_errors, MAX_LINT_ERROR_REPORTS)
                 data = json.dumps({
                     'body': message
@@ -162,12 +162,12 @@ Only reporting the first {2}.""".format(
                     path = location[0]
                     line_number = location[1]
                     no_matching_line_messages.append(
-                        '{0}:{1}:'.format(path, line_number))
+                        f'{path}:{line_number}:')
                     for problem in problems_for_line:
-                        no_matching_line_messages.append('\t{0}'.format(
+                        no_matching_line_messages.append('\t{}'.format(
                             problem.message))
-                message = ('{0} says: I found some problems with lines not '
-                           'modified by this commit:\n```\n{1}\n```'.format(
+                message = ('{} says: I found some problems with lines not '
+                           'modified by this commit:\n```\n{}\n```'.format(
                                linter_name,
                                '\n'.join(no_matching_line_messages)))
                 data = json.dumps({
@@ -318,7 +318,7 @@ Only reporting the first {2}.""".format(
 
     @staticmethod
     def _is_linter_message(text: str, linter_name: str) -> bool:
-        return text.startswith('{} says:'.format(linter_name))
+        return text.startswith(f'{linter_name} says:')
 
 
 def register_arguments(parser: argparse.ArgumentParser) -> None:
