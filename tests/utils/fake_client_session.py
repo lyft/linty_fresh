@@ -50,6 +50,12 @@ class FakeClientSession:
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
 
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc, tb):
+        pass
+
     async def _get_stored_value(self, url, method):
         if (url, method) not in self.url_map:
             raise Exception('Invalid test request: ({}, {})'.format(
