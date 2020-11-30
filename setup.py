@@ -21,11 +21,11 @@ setup(
     include_package_data=True,
     setup_requires=[
         'flake8>=2.2.3, <3.0.0',
-        'flake8-blind-except>=0.1.1',
-        'flake8-debugger>=1.4.0',
-        'flake8-import-order>=0.10',
-        'flake8-quotes>=0.8.1',
-        'mock>=1.0.1',
+        'flake8-blind-except==0.1.1',
+        'flake8-debugger>=1.4.0, <4.0.0',
+        'flake8-import-order>=0.10, <0.19',
+        'flake8-quotes>=0.8.1, <3.2.0',
+        'mock>=1.0.1, <4.0.2',
         'pycodestyle>=2.0.0, <2.1.0',
     ],
     install_requires=[
