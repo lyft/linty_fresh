@@ -2,14 +2,14 @@ import asyncio
 import json
 import textwrap
 import unittest
-
 from unittest.mock import MagicMock, call, patch
 
-from linty_fresh.reporters import github_reporter
-from linty_fresh.reporters.github_reporter import (GithubReporter,
-                                                   ExistingGithubMessage,
-                                                   HadLintErrorsException)
 from linty_fresh.problem import Problem
+from linty_fresh.reporters import github_reporter
+from linty_fresh.reporters.github_reporter import (ExistingGithubMessage,
+                                                   GithubReporter,
+                                                   HadLintErrorsException)
+
 from ..utils.fake_client_session import FakeClientResponse, FakeClientSession
 
 

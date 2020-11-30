@@ -1,4 +1,5 @@
 import unittest
+
 from linty_fresh.linters import passthrough
 from linty_fresh.problem import Problem
 

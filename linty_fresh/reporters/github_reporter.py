@@ -10,7 +10,6 @@ import aiohttp
 
 from linty_fresh.problem import Problem, TestProblem
 
-
 PR_URL_REGEX = re.compile(r'https?://.*?github.com/'
                           r'(?:repos/)?'
                           r'(?P<organization>[^/]*)/'
