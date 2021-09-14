@@ -1,7 +1,8 @@
 #!/bin/bash
 
 set -euo pipefail
-set -x
+
+curl -H "Authorization: Bearer $GITHUB_AUTH_TOKEN" https://api.github.com/user
 
 python setup.py test
 pre-commit run -a
